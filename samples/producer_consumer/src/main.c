@@ -14,11 +14,14 @@ int main(int argc, char *argv[])
 {
 	const struct zbus_channel *chan;
 	struct msg_input msg;
+	int count = 0;
 
 	while (1) {
 		zbus_sub_wait_msg(&msub_consumer, &chan, &msg, K_FOREVER);
 
-		printk("Random data %d\n", msg.data);
+		printk(" %d - Random data %d\n", count, msg.data);
+
+		++count;
 	}
 	return 0;
 }

@@ -1,0 +1,17 @@
+sample:
+  name: Heavy
+tests:
+  sample.lua_zephyr.heavy:
+    harness: console
+    extra_configs:
+      - CONFIG_QEMU_ICOUNT=y
+      - CONFIG_SHELL=n
+    harness_config:
+      type: multi_line
+      ordered: false
+      regex:
+        - "Heavy load sample finished"
+        - "allocated 0, free 32676, max allocated 19288, heap size 32768"
+    tags: lua_zephyr
+    integration_platforms:
+      - qemu_x86
