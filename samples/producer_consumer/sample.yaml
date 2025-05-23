@@ -1,0 +1,27 @@
+sample:
+  name: Producer consumer
+tests:
+  sample.lua_zephyr.producer_consumer:
+    harness: console
+    extra_configs:
+      - CONFIG_QEMU_ICOUNT=y
+      - CONFIG_SHELL=n
+    harness_config:
+      type: multi_line
+      ordered: true
+      regex:
+        - "Lua producer thread started"
+        - " 0 - Random data \\d{1,2}"
+        - " 1 - Random data \\d{1,2}"
+        - " 2 - Random data \\d{1,2}"
+        - " 3 - Random data \\d{1,2}"
+        - " 4 - Random data \\d{1,2}"
+        - " 5 - Random data \\d{1,2}"
+        - " 6 - Random data \\d{1,2}"
+        - " 7 - Random data \\d{1,2}"
+        - " 8 - Random data \\d{1,2}"
+        - " 9 - Random data \\d{1,2}"
+        - "allocated 0, free 32676, max allocated 5780, heap size 32768"
+    tags: lua_zephyr
+    integration_platforms:
+      - qemu_x86

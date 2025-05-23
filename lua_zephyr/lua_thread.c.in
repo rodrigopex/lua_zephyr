@@ -6,9 +6,9 @@
 #include <lua_zephyr/utils.h>
 #include <zephyr/kernel.h>
 
-#define @FILE_NAME@_HEAP_SIZE KB(16)
+#define @FILE_NAME@_HEAP_SIZE KB(32)
 
-static char heap_mem[KB(16)];
+static char heap_mem[@FILE_NAME@_HEAP_SIZE];
 static struct sys_heap lua_heap;
 static const char @FILE_NAME@_lua_script[] = "@LUA_CONTENT@";
 
@@ -46,8 +46,6 @@ static void @FILE_NAME@_lua_thread(void*p1, void*p2, void*p3)
         return;
     }
 
-	lua_register_zephyr_api(L);
-
 	if (luaL_dostring(L, @FILE_NAME@_lua_script) != LUA_OK) {
 		printk("Lua error: %s\n", lua_tostring(L, -1));
 		lua_pop(L, 1);
@@ -60,6 +58,6 @@ static void @FILE_NAME@_lua_thread(void*p1, void*p2, void*p3)
     k_sleep(K_FOREVER);
 }
 
-K_THREAD_DEFINE(@FILE_NAME@_lua_thread_id, KB(2), @FILE_NAME@_lua_thread, NULL, NULL, NULL, 3, 0, 0);
+K_THREAD_DEFINE(@FILE_NAME@_lua_thread_id, KB(4), @FILE_NAME@_lua_thread, NULL, NULL, NULL, 3, 0, 0);
 
 /* clang-format on */
