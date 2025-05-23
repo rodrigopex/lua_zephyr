@@ -1,0 +1,30 @@
+menu "Zephyr"
+source "Kconfig.zephyr"
+endmenu
+
+module = APP
+module-str = APP
+
+menu "Artemis"
+  menu "Lua"
+    config LUA_HEAP_SIZE_KB
+      int "Size of the heap used by the Lua allocator, in KB"
+      default 32
+  endmenu
+endmenu
+
+menu "Fence"
+  menu "test"
+    config TEST_FENCE
+      bool "Enable fence test"
+      default n  
+  endmenu
+endmenu
+
+menu "Threads"
+  menu "Hook"
+    config THREAD_HOOK_STACK_SIZE
+      int "The stack size of the Hook event dispatcher, in bytes"
+      default 2048
+  endmenu
+endmenu
