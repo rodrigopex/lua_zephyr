@@ -1,0 +1,9 @@
+menu "Lua support"
+config LUA
+    bool "Lua support"
+    default y
+    help
+      Enable Lua support. This is required for the Lua scripting engine.
+      If you enable this option, you will be able to use Lua scripts in your
+      configuration.
+endmenu

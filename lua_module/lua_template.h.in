@@ -1,0 +1,9 @@
+/* clang-format off */
+#ifndef LUA_@FILE_NAME@
+#define LUA_@FILE_NAME@
+
+const char @FILE_NAME@_lua_script[] = "@LUA_CONTENT@";
+
+#endif /* LUA_@FILE_NAME@ */
+
+/* clang-format on */
