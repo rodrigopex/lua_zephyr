@@ -60,6 +60,6 @@ static void @FILE_NAME@_lua_thread(void*p1, void*p2, void*p3)
     k_sleep(K_FOREVER);
 }
 
-K_THREAD_DEFINE(@FILE_NAME@_lua_thread_id, KB(2), @FILE_NAME@_lua_thread, NULL, NULL, NULL, 3, 0, 2000);
+K_THREAD_DEFINE(@FILE_NAME@_lua_thread_id, KB(2), @FILE_NAME@_lua_thread, NULL, NULL, NULL, 3, 0, 0);
 
 /* clang-format on */
