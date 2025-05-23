@@ -34,27 +34,6 @@ void *lua_zephyr_allocator(void *ud, void *ptr, size_t osize, size_t nsize)
 	return res;
 }
 
-static int add_numbers(lua_State *L)
-{
-	// Get the number of arguments
-	int n = lua_gettop(L);
-	if (n != 2) {
-		return luaL_error(L, "expected 2 arguments, got %d", n);
-	}
-	// Get the arguments from the stack
-	float a = luaL_checknumber(L, 1);
-	float b = luaL_checknumber(L, 2);
-
-	// Perform the addition
-	float sum = a + b;
-
-	// Push the result onto the stack
-	lua_pushnumber(L, sum);
-
-	// Return the number of return values
-	return 1;
-}
-
 static int k_msleep_wrapper(lua_State *L)
 {
 	int n = lua_gettop(L);
@@ -78,30 +57,21 @@ static int printk_wrapper(lua_State *L)
 
 	const char *message = luaL_checkstring(L, 1);
 
-	printk("[lua]: %s\n", message);
+	printk("%s\n", message);
 
 	return 0;
 }
 
-static const luaL_Reg c_wrappers[] = {
-	{"add", add_numbers},
+static const luaL_Reg zephyr_wrappers[] = {
 	{"msleep", k_msleep_wrapper},
 	{"printk", printk_wrapper},
 	{NULL, NULL} // Sentinel value to mark the end of the array
 };
 
-static int luaopen_zephyr(lua_State *L)
+int luaopen_zephyr(lua_State *L)
 {
-	luaL_newlib(L, c_wrappers);
+	luaL_newlib(L, zephyr_wrappers);
 	return 1;
-}
-
-int lua_register_zephyr_api(lua_State *L)
-{
-	luaL_requiref(L, "zephyr", luaopen_zephyr, 1);
-	lua_pop(L, 1);
-
-	return 0;
 }
 
 /* Stub function just to make the compiler happy */

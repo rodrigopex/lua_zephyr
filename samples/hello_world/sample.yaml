@@ -1,0 +1,21 @@
+sample:
+  name: Hello World
+tests:
+  sample.lua_zephyr.hello_world:
+    harness: console
+    extra_configs:
+      - CONFIG_QEMU_ICOUNT=y
+      - CONFIG_SHELL=n
+    harness_config:
+      type: multi_line
+      ordered: true
+      regex:
+        - "-"
+        - "Pre-lua vm setup for hello world lua by the user"
+        - "Hello from lua thread"
+        - "bye"
+        - "allocated 0, free 32676, max allocated 4280, heap size 32768"
+        - "Sample 01, finished successfully"
+    tags: lua_zephyr
+    integration_platforms:
+      - qemu_x86
