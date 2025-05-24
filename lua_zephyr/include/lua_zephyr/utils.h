@@ -16,4 +16,6 @@ void *lua_zephyr_allocator(void *ud, void *ptr, size_t osize, size_t nsize);
 
 int luaopen_zephyr(lua_State *L);
 
+int luaopen_struct(lua_State *L);
+
 #endif /* _LUA_ZEPHYR_UTILS_H */
