@@ -1,3 +1,4 @@
+#include "lua.h"
 #include "lua_zephyr/utils.h"
 
 #include <lauxlib.h>
@@ -5,6 +6,10 @@
 #include <sys/times.h>
 #include <time.h>
 #include <zephyr/sys/sys_heap.h>
+#include <zephyr/logging/log.h>
+
+LOG_MODULE_REGISTER(lua_zephyr, LOG_LEVEL_DBG);
+
 /**
  * @brief The custom allocator that Lua will use to dynamically allocate all
 relevant data in the context
@@ -62,9 +67,69 @@ static int printk_wrapper(lua_State *L)
 	return 0;
 }
 
+static int log_inf_wrapper(lua_State *L)
+{
+	int n = lua_gettop(L);
+	if (n != 1) {
+		return luaL_error(L, "expected 1 arguments, got %d", n);
+	}
+
+	const char *message = luaL_checkstring(L, 1);
+
+	LOG_INF("[%s]: %s", k_thread_name_get(k_current_get()), message);
+
+	return 0;
+}
+
+static int log_wrn_wrapper(lua_State *L)
+{
+	int n = lua_gettop(L);
+	if (n != 1) {
+		return luaL_error(L, "expected 1 arguments, got %d", n);
+	}
+
+	const char *message = luaL_checkstring(L, 1);
+
+	LOG_WRN("[%s]: %s", k_thread_name_get(k_current_get()), message);
+
+	return 0;
+}
+
+static int log_dbg_wrapper(lua_State *L)
+{
+	int n = lua_gettop(L);
+	if (n != 1) {
+		return luaL_error(L, "expected 1 arguments, got %d", n);
+	}
+
+	const char *message = luaL_checkstring(L, 1);
+
+	LOG_DBG("[%s]: %s", k_thread_name_get(k_current_get()), message);
+
+	return 0;
+}
+
+static int log_err_wrapper(lua_State *L)
+{
+	int n = lua_gettop(L);
+	if (n != 1) {
+		return luaL_error(L, "expected 1 arguments, got %d", n);
+	}
+
+	const char *message = luaL_checkstring(L, 1);
+
+	LOG_ERR("[%s]: %s", k_thread_name_get(k_current_get()), message);
+
+	return 0;
+}
+
 static const luaL_Reg zephyr_wrappers[] = {
 	{"msleep", k_msleep_wrapper},
 	{"printk", printk_wrapper},
+	{"log_inf", log_inf_wrapper},
+	{"log_wrn", log_wrn_wrapper},
+	{"log_dbg", log_dbg_wrapper},
+	{"log_err", log_err_wrapper},
 	{NULL, NULL} // Sentinel value to mark the end of the array
 };
 
