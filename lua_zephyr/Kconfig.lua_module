@@ -1,8 +1,35 @@
-menu "Lua support"
+menu "Lua Zephyr"
+
 config LUA
     bool "Lua support"
     help
       Enable Lua support. This is required for the Lua scripting engine.
-      If you enable this option, you will be able to use Lua scripts in your
-      configuration.
+      If you enable this option, you will be able to use Lua scripts and
+      spawn Lua threads.
+
+config LUA_THREAD_STACK_SIZE
+    int "Lua thread stack size"
+    depends on LUA
+    default 2048
+    help
+      The stack size for Lua threads automatically created by Lua Zephyr.
+
+config LUA_THREAD_HEAP_SIZE
+  int "Lua thread heap size"
+  depends on LUA
+  default 32768
+  help
+    The heap size for Lua threads automatically created by Lua Zephyr.
+    This is the size of the memory pool used by Lua for its internal
+    memory management. 
+
+config LUA_THREAD_PRIORITY
+  int "Lua thread priority"
+  depends on LUA
+  default 7
+  help
+    The priority of Lua threads automatically created by Lua Zephyr.
+    Note that this is effectively the priority of the Lua thread and
+    all will be created with this priority.
+
 endmenu
