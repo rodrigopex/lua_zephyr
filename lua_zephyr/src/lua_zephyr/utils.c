@@ -8,7 +8,7 @@
 #include <zephyr/sys/sys_heap.h>
 #include <zephyr/logging/log.h>
 
-LOG_MODULE_REGISTER(lua_zephyr, LOG_LEVEL_DBG);
+LOG_MODULE_REGISTER(lua_zephyr, CONFIG_LUA_ZEPHYR_LOG_LEVEL);
 
 /**
  * @brief The custom allocator that Lua will use to dynamically allocate all

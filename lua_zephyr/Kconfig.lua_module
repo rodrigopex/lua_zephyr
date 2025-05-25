@@ -32,4 +32,7 @@ config LUA_THREAD_PRIORITY
     Note that this is effectively the priority of the Lua thread and
     all will be created with this priority.
 
+module = LUA_ZEPHYR
+module-str = lua_zephyr
+source "subsys/logging/Kconfig.template.log_config"
 endmenu
