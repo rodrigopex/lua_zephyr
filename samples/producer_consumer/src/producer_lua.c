@@ -46,7 +46,7 @@ size_t lua_table_to_msg_struct(lua_State *L, void *message)
 	return 1;
 }
 
-int lua_producer_setup(lua_State *L)
+int producer_lua_setup(lua_State *L)
 {
 	LUA_REQUIRE(zephyr);
 	LUA_REQUIRE(zbus);
