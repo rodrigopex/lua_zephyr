@@ -10,7 +10,7 @@ static char heap_mem[CONFIG_LUA_THREAD_HEAP_SIZE];
 static struct sys_heap lua_heap;
 static const char @FILE_NAME@_lua_script[] = "@LUA_CONTENT@";
 
-int __weak lua_@FILE_NAME@_setup(lua_State *L)
+int __weak @FILE_NAME@_lua_setup(lua_State *L)
 {
     ARG_UNUSED(L);
 
@@ -37,7 +37,7 @@ static void @FILE_NAME@_lua_thread(void*p1, void*p2, void*p3)
 
 	lua_State *L = lua_newstate(lua_zephyr_allocator, &lua_heap);
 
-    int err = lua_@FILE_NAME@_setup(L);
+    int err = @FILE_NAME@_lua_setup(L);
     if(err) {
         lua_close(L);
         __ASSERT(false, "Setup required to be successful");
