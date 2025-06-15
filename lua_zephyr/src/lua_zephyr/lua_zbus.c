@@ -107,13 +107,11 @@ static int chan_tostring(lua_State *L)
 	return 1;
 }
 
-static const struct luaL_Reg zbus_chan_metamethods[] = {
-	{"pub", chan_pub},
-	{"read", chan_read},
-	{"__tostring", chan_tostring},
-	{"__eq", chan_equals},
-	{NULL, NULL} // Sentinel
-};
+static const struct luaL_Reg zbus_chan_metamethods[] = {{"pub", chan_pub},
+							{"read", chan_read},
+							{"__tostring", chan_tostring},
+							{"__eq", chan_equals},
+							{NULL, NULL}};
 
 static const struct zbus_observer **check_zbus_observer(lua_State *L, int idx)
 {
@@ -151,13 +149,9 @@ static int sub_wait_msg(lua_State *L)
 	return 3;
 }
 
-static const struct luaL_Reg zbus_obs_metamethods[] = {
-	{"wait_msg", sub_wait_msg}, {NULL, NULL} // Sentinel
-};
+static const struct luaL_Reg zbus_obs_metamethods[] = {{"wait_msg", sub_wait_msg}, {NULL, NULL}};
 
-static const luaL_Reg zbus[] = {
-	{NULL, NULL} // Sentinel value to mark the end of the array
-};
+static const luaL_Reg zbus[] = {{NULL, NULL}};
 
 int lua_zbus_chan_declare(lua_State *L, const struct zbus_channel *chan, const char *chan_name)
 {
