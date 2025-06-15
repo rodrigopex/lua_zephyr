@@ -7,7 +7,7 @@
 
 #include "sample01_lua_script.h"
 
-int lua_hello_world_setup(lua_State *L)
+int hello_world_lua_setup(lua_State *L)
 {
 	printk("Pre-lua vm setup for hello world lua by the user\n");
 
