@@ -24,6 +24,4 @@ struct msg_version {
 };
 ZBUS_CHAN_DECLARE(chan_version); /* Type: struct msg_acc_data_ack */
 
-// int luaopen_msg_acc_data(lua_State *L);
-
-#endif // !CONSUMER_H
+#endif /* !CONSUMER_H */
