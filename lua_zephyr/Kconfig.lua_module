@@ -7,6 +7,22 @@ config LUA
       If you enable this option, you will be able to use Lua scripts and
       spawn Lua threads.
 
+config LUA_REPL
+    bool "Lua REPL support"
+    depends on LUA && SHELL
+    default n
+    help
+      Enable the Lua REPL (Read-Eval-Print Loop) support. This allows you to
+      interactively run Lua commands via Zephyr's shell.
+
+config LUA_REPL_LINE_SIZE
+    int "Lua REPL line size"
+    depends on LUA_REPL
+    default 256
+    help
+      The maximum size of a line in the Lua REPL. This is the maximum number
+      of characters that can be entered in a single line in the Lua REPL.
+
 config LUA_THREAD_STACK_SIZE
     int "Lua thread stack size"
     depends on LUA
