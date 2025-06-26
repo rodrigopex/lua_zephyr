@@ -20,6 +20,7 @@ if(CONFIG_LUA)
     zephyr_library_sources("${SRC}"
                            "${SRC_DIR}/lua_zephyr/utils.c"
                            "${SRC_DIR}/lua_zephyr/lua_zbus.c"
+                           "${SRC_DIR}/lua_zephyr/lua_repl.c"
     )
 
     # Add the helper functions to be used inside the user CMakeLists.txt. For
