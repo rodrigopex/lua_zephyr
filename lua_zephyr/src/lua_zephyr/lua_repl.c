@@ -8,6 +8,9 @@
 #include <zephyr/shell/shell.h>
 #include <zephyr/sys/printk.h>
 
+#define EOT 0x04 /* Ctrl+D */
+#define FF  0x0C /* Ctrl+L */
+
 static struct {
 	struct {
 		char buffer[CONFIG_LUA_THREAD_HEAP_SIZE];
@@ -16,10 +19,15 @@ static struct {
 	char input_line[CONFIG_LUA_REPL_LINE_SIZE];
 } self = {};
 
-void *shell_getline(const struct shell *shell, char *buf, const size_t len)
+static void shell_getline(const struct shell *sh, char *buf, const size_t len, bool *received_exit)
 {
-	__ASSERT(shell != NULL, "Shell cannot be NULL");
+	__ASSERT(sh != NULL, "Shell cannot be NULL");
 	__ASSERT(buf != NULL, "Buffer cannot be NULL");
+	__ASSERT(len > 0, "Buffer length must be greater than 0");
+	__ASSERT(len <= CONFIG_LUA_REPL_LINE_SIZE, "Buffer length exceeds maximum size");
+	__ASSERT(received_exit != NULL, "Received exit flag pointer cannot be NULL");
+
+	const struct shell_transport_api *sh_api = sh->iface->api;
 
 	memset(buf, 0, len);
 
@@ -28,20 +36,35 @@ void *shell_getline(const struct shell *shell, char *buf, const size_t len)
 		size_t cnt = 0;
 
 		while (cnt == 0) {
-			shell->iface->api->read(shell->iface, &c, sizeof(c), &cnt);
+			sh_api->read(sh->iface, &c, sizeof(c), &cnt);
 			if (cnt == 0) {
 				k_sleep(K_MSEC(10));
 			}
 		}
 
-		shell->iface->api->write(shell->iface, &c, sizeof(c), &cnt);
+		if (c == 0x08 || c == 0x7F) {
+			shell_fprintf(sh, SHELL_NORMAL, "\b \b");
+			continue;
+		}
+
+		sh_api->write(sh->iface, &c, sizeof(c), &cnt);
+		if (cnt == 1) {
+			if (c == EOT) {
+				*received_exit = true;
+				return;
+			}
+
+			if (c == FF) {
+				shell_print(sh, "\033[H\033[J");
+				shell_fprintf(sh, SHELL_NORMAL, "lua> ");
+			}
+		}
+
 		if (c == '\n' || c == '\r') {
 			break;
 		}
 		buf[i] = c;
 	}
-
-	return buf;
 }
 
 static void lua_repl_print(lua_State *L)
@@ -66,6 +89,8 @@ static int lua_repl_cmd(const struct shell *sh, size_t argc, char **argv, void *
 	ARG_UNUSED(argv);
 	ARG_UNUSED(data);
 
+	bool received_exit = false;
+
 	sys_heap_init(&self.lua_heap.heap, self.lua_heap.buffer, CONFIG_LUA_THREAD_HEAP_SIZE);
 
 	lua_State *L = lua_newstate(lua_zephyr_allocator, &self.lua_heap.heap);
@@ -77,18 +102,20 @@ static int lua_repl_cmd(const struct shell *sh, size_t argc, char **argv, void *
 	LUA_REQUIRE(zephyr);
 	LUA_REQUIRE(base);
 
-	shell_print(sh, "\nZephyr Lua v5.4.7 REPL. Type ':quit' to exit.\n");
+	shell_print(
+		sh,
+		"\nZephyr Lua v5.4.7 REPL. Press Ctrl+D to exit or Ctrl+L to clear the screen.\n");
 
 	while (true) {
 		shell_fprintf(sh, SHELL_NORMAL, "lua> ");
-		shell_getline(sh, self.input_line, sizeof(self.input_line));
+		shell_getline(sh, self.input_line, sizeof(self.input_line), &received_exit);
+
+		if (received_exit) {
+			return 0;
+		}
 
 		/* new line needed to avoid character superposition from previous input */
 		shell_print(sh, "\n");
-
-		if (strcmp(self.input_line, ":quit") == 0) {
-			break;
-		}
 
 		const char *line = self.input_line;
 
