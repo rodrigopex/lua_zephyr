@@ -23,11 +23,11 @@ static struct {
 
 static void shell_getline(const struct shell *sh, char *buf, const size_t len, bool *received_exit)
 {
-	__ASSERT(sh != NULL, "Shell cannot be NULL");
-	__ASSERT(buf != NULL, "Buffer cannot be NULL");
-	__ASSERT(len > 0, "Buffer length must be greater than 0");
-	__ASSERT(len <= CONFIG_LUA_REPL_LINE_SIZE, "Buffer length exceeds maximum size");
-	__ASSERT(received_exit != NULL, "Received exit flag pointer cannot be NULL");
+	__ASSERT_NO_MSG(sh != NULL);
+	__ASSERT_NO_MSG(buf != NULL);
+	__ASSERT_NO_MSG(len > 0);
+	__ASSERT_NO_MSG(len <= CONFIG_LUA_REPL_LINE_SIZE);
+	__ASSERT_NO_MSG(received_exit != NULL);
 
 	const struct shell_transport_api *sh_api = sh->iface->api;
 
