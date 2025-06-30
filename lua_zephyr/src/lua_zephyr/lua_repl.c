@@ -31,16 +31,13 @@ static void shell_getline(const struct shell *sh, char *buf, const size_t len, b
 
 	const struct shell_transport_api *sh_api = sh->iface->api;
 
-	memset(buf, 0, len);
+	(void)memset(buf, 0, len);
 
 	for (size_t i = 0; i < (len - 1);) {
 		char c;
 		size_t cnt = 0;
 
-		while (cnt == 0) {
-			sh_api->read(sh->iface, &c, sizeof(c), &cnt);
-			WAIT_FOR(cnt > 0, 1000, NULL);
-		}
+		WAIT_FOR(cnt > 0, UINT32_MAX, (sh_api->read(sh->iface, &c, sizeof(c), &cnt)));
 
 		if (c == BS || c == DEL) {
 			i--;
