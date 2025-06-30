@@ -9,6 +9,8 @@
 #include <zephyr/sys/printk.h>
 
 #define EOT 0x04 /* Ctrl+D */
+#define BS  0x08 /* Backspace */
+#define DEL 0x7F /* Delete */
 #define FF  0x0C /* Ctrl+L */
 
 static struct {
@@ -42,8 +44,13 @@ static void shell_getline(const struct shell *sh, char *buf, const size_t len, b
 			}
 		}
 
-		if (c == 0x08 || c == 0x7F) {
-			shell_fprintf(sh, SHELL_NORMAL, "\b \b");
+		if (c == BS || c == DEL) {
+			if (i > 1) {
+				i--;
+				buf[i] = '\0';
+				shell_fprintf(sh, SHELL_NORMAL, "\b \b");
+			}
+
 			continue;
 		}
 
