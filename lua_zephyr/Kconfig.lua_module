@@ -10,7 +10,7 @@ config LUA
 config LUA_REPL
     bool "Lua REPL support"
     depends on LUA
-    selects SHELL
+    select SHELL
     default n
     help
       Enable the Lua REPL (Read-Eval-Print Loop) support. This allows you to
