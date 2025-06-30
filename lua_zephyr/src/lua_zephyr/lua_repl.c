@@ -33,7 +33,7 @@ static void shell_getline(const struct shell *sh, char *buf, const size_t len, b
 
 	memset(buf, 0, len);
 
-	for (size_t i = 0; i < (len - 1); i++) {
+	for (size_t i = 0; i < (len - 1);) {
 		char c;
 		size_t cnt = 0;
 
@@ -43,11 +43,9 @@ static void shell_getline(const struct shell *sh, char *buf, const size_t len, b
 		}
 
 		if (c == BS || c == DEL) {
-			if (i > 1) {
-				i--;
-				buf[i] = '\0';
-				shell_fprintf(sh, SHELL_NORMAL, "\b \b");
-			}
+			i--;
+			buf[i] = '\0';
+			shell_fprintf(sh, SHELL_NORMAL, "\b \b");
 
 			continue;
 		}
@@ -68,7 +66,9 @@ static void shell_getline(const struct shell *sh, char *buf, const size_t len, b
 		if (c == '\n' || c == '\r') {
 			break;
 		}
+
 		buf[i] = c;
+		i++;
 	}
 }
 
