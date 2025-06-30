@@ -39,9 +39,7 @@ static void shell_getline(const struct shell *sh, char *buf, const size_t len, b
 
 		while (cnt == 0) {
 			sh_api->read(sh->iface, &c, sizeof(c), &cnt);
-			if (cnt == 0) {
-				k_sleep(K_MSEC(10));
-			}
+			WAIT_FOR(cnt > 0, 1000, NULL);
 		}
 
 		if (c == BS || c == DEL) {
