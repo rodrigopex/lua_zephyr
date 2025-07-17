@@ -17,9 +17,9 @@ struct msg_acc_data_consumed {
 ZBUS_CHAN_DECLARE(chan_acc_data_consumed); /* Type: struct msg_acc_data_ack */
 
 struct msg_version {
-	uint8_t major;
-	uint8_t minor;
-	uint8_t patch;
+	uint32_t major;
+	uint32_t minor;
+	uint32_t patch;
 	const char *hardware_id;
 };
 ZBUS_CHAN_DECLARE(chan_version); /* Type: struct msg_acc_data_ack */
