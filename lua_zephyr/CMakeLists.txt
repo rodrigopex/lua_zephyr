@@ -21,6 +21,7 @@ if(CONFIG_LUA)
                            "${SRC_DIR}/lua_zephyr/utils.c"
                            "${SRC_DIR}/lua_zephyr/lua_zbus.c"
                            "${SRC_DIR}/lua_zephyr/lua_repl.c"
+                           "${SRC_DIR}/lua_zephyr/codec.c"
     )
 
     # Add the helper functions to be used inside the user CMakeLists.txt. For

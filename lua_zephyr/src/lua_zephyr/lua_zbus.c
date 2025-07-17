@@ -4,6 +4,7 @@
 #include <zephyr/zbus/zbus.h>
 #include <lua_zephyr/utils.h>
 #include <lua_zephyr/zbus.h>
+#include <lua_zephyr/codec.h>
 #include <zephyr/kernel.h>
 
 /* Metatable name for our userdata */
@@ -17,12 +18,6 @@ static const struct zbus_channel **check_zbus_channel(lua_State *L, int idx)
 	void *ud = luaL_checkudata(L, idx, ZBUS_CHAN_METATABLE);
 	luaL_argcheck(L, ud != NULL, idx, "`zbus channel' expected");
 	return ud;
-}
-
-int __weak msg_struct_to_lua_table(lua_State *L, const struct zbus_channel *chan, void *message)
-{
-	lua_pushnil(L);
-	return 1;
 }
 
 size_t __weak lua_table_to_msg_struct(lua_State *L, void *message)
@@ -75,7 +70,15 @@ static int chan_read(lua_State *L)
 
 	lua_pushinteger(L, err);
 
-	msg_struct_to_lua_table(L, *chan, msg);
+	struct user_data_wrapper *ud = (struct user_data_wrapper *)zbus_chan_user_data(*chan);
+	if (ud == NULL) {
+		return luaL_error(L, "channel user data is not set");
+	}
+
+	err = struct_to_lua_table(L, ud->desc, msg, ud->desc_size);
+	if (err < 0) {
+		return luaL_error(L, "failed to convert message to Lua table: %d", err);
+	}
 
 	return 2;
 }
@@ -143,7 +146,15 @@ static int sub_wait_msg(lua_State *L)
 		luaL_getmetatable(L, ZBUS_CHAN_METATABLE);
 		lua_setmetatable(L, -2);
 
-		msg_struct_to_lua_table(L, chan, msg);
+		const struct user_data_wrapper *ud = zbus_chan_user_data(chan);
+		if (ud == NULL) {
+			return luaL_error(L, "channel user data is not set");
+		}
+
+		err = struct_to_lua_table(L, ud->desc, msg, ud->desc_size);
+		if (err < 0) {
+			return luaL_error(L, "failed to convert message to Lua table: %d", err);
+		}
 	}
 
 	return 3;
