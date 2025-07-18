@@ -18,8 +18,9 @@ void consumer_thread(void *p1, void *p2, void *p3)
 		zbus_sub_wait_msg(&msub_consumer, &chan, &msg, K_FOREVER);
 		++ack_msg.count;
 
-		printk(" %d - Accelerometer data x=%02d,y=%02d,z=%02d\n", ack_msg.count, msg.x,
-		       msg.y, msg.z);
+		printk(" %d - Accelerometer data x=%02d,y=%02d,z=%02d from source: %s \n",
+		       ack_msg.count, msg.x, msg.y, msg.z,
+		       (strlen(msg.source) == 0) ? "unknown" : msg.source);
 
 		zbus_chan_pub(&chan_acc_data_consumed, &ack_msg, K_MSEC(250));
 	}

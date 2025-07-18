@@ -20,11 +20,6 @@ static const struct zbus_channel **check_zbus_channel(lua_State *L, int idx)
 	return ud;
 }
 
-size_t __weak lua_table_to_msg_struct(lua_State *L, void *message)
-{
-	return 0;
-}
-
 static int chan_pub(lua_State *L)
 {
 	int err = -EINVAL;
@@ -36,14 +31,15 @@ static int chan_pub(lua_State *L)
 
 	const struct zbus_channel **chan = check_zbus_channel(L, 1);
 
-	luaL_checktype(L, 2, LUA_TTABLE);
-
-	int timeout_ms = luaL_checkinteger(L, 3);
+	int timeout_ms = luaL_checkinteger(L, 2);
 	uint8_t msg[ZBUS_MSG_CAPACITY] = {};
 
-	size_t s = lua_table_to_msg_struct(L, msg);
+	luaL_checktype(L, 3, LUA_TTABLE);
 
-	if (s) {
+	const struct user_data_wrapper *ud = zbus_chan_user_data(*chan);
+
+	err = lua_table_to_struct(L, ud->desc, msg, ud->desc_size, 3);
+	if (err == 0) {
 		err = zbus_chan_pub(*chan, msg, K_MSEC(timeout_ms));
 	}
 

@@ -8,6 +8,7 @@ struct msg_acc_data {
 	int x;
 	int y;
 	int z;
+	const char source[16];
 };
 ZBUS_CHAN_DECLARE(chan_acc_data); /* Type: struct msg_acc_data */
 

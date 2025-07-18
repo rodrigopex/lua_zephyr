@@ -39,7 +39,8 @@ struct lua_object_descriptor {
 						   .size = sizeof(((struct_ *)0)->field_name_),    \
 			}
 
-int lua_table_to_struct(lua_State *L, const struct lua_object_descriptor *desc, void *struct_ptr);
+int lua_table_to_struct(lua_State *L, const struct lua_object_descriptor *desc, void *struct_ptr,
+			size_t desc_size, int table_index);
 
 int struct_to_lua_table(lua_State *L, const struct lua_object_descriptor *desc,
 			const void *struct_ptr, size_t desc_size);

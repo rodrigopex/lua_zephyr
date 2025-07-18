@@ -14,7 +14,7 @@ local getrandom = function(seed)
 	return (A1 * seed + B1) % M1
 end
 
-local acc_data = { type = "msg_acc_data", x = 0, y = 0, z = 0 }
+local acc_data = { x = 0, y = 0, z = 0, source = "lua" }
 
 local i = 1
 
@@ -25,7 +25,7 @@ while i < 10 do
 
 	zephyr.printk("<-- Lua producing data ")
 
-	err = zbus.chan_acc_data:pub(acc_data, 200)
+	err = zbus.chan_acc_data:pub(200, acc_data)
 	if err ~= 0 then
 		zephyr.printk("Could not pub to channel")
 	end
