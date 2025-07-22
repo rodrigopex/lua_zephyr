@@ -8,9 +8,9 @@
 
 #define CAST_STRUCT_MEMBER_PRIM(type_, ptr_, desc_) ((type_)(CAST_STRUCT(ptr_, desc_)))
 
-#define CAST_STRUCT_MEMBER_STR(ptr_, desc_) (const char **)CAST_STRUCT(ptr_, desc_)
+#define CAST_STRUCT_MEMBER_STR(ptr_, desc_) (char **)CAST_STRUCT(ptr_, desc_)
 
-static int struct_member_to_lua(lua_State *L, const struct lua_object_descriptor *desc,
+static int struct_member_to_lua(lua_State *L, const struct lua_zephyr_table_descr *desc,
 				const void *struct_ptr)
 {
 	switch (desc->type) {
@@ -24,7 +24,7 @@ static int struct_member_to_lua(lua_State *L, const struct lua_object_descriptor
 		lua_pushnumber(L, *CAST_STRUCT_MEMBER_PRIM(float *, struct_ptr, desc));
 		break;
 	case LUA_CODEC_VALUE_TYPE_STRING:
-		char *str_ptr = *CAST_STRUCT_MEMBER_STR(struct_ptr, desc);
+		const char *str_ptr = *CAST_STRUCT_MEMBER_STR(struct_ptr, desc);
 		lua_pushlstring(L, str_ptr, strlen(str_ptr));
 		break;
 	case LUA_CODEC_VALUE_TYPE_INTEGER:
@@ -39,7 +39,7 @@ static int struct_member_to_lua(lua_State *L, const struct lua_object_descriptor
 }
 
 static int lua_field_to_struct_member(lua_State *L, const char *key, void *struct_ptr,
-				      const struct lua_object_descriptor *desc)
+				      const struct lua_zephyr_table_descr *desc)
 {
 	switch (desc->type) {
 	case LUA_CODEC_VALUE_TYPE_NIL:
@@ -65,7 +65,7 @@ static int lua_field_to_struct_member(lua_State *L, const char *key, void *struc
 		if (str_len >= desc->size) {
 			return -EINVAL;
 		}
-		strncpy(CAST_STRUCT_MEMBER_STR(struct_ptr, desc), str, str_len + 1);
+		strncpy((char *)CAST_STRUCT_MEMBER_STR(struct_ptr, desc), str, str_len + 1);
 		break;
 	case LUA_CODEC_VALUE_TYPE_INTEGER:
 		if (!lua_isinteger(L, -1)) {
@@ -80,7 +80,7 @@ static int lua_field_to_struct_member(lua_State *L, const char *key, void *struc
 	return 0;
 }
 
-static int find_member_by_name(const struct lua_object_descriptor *desc, size_t desc_size,
+static int find_member_by_name(const struct lua_zephyr_table_descr *desc, size_t desc_size,
 			       const char *name)
 {
 	for (size_t i = 0; i < desc_size; i++) {
@@ -91,8 +91,8 @@ static int find_member_by_name(const struct lua_object_descriptor *desc, size_t 
 	return -ENOENT;
 }
 
-int lua_table_to_struct(lua_State *L, const struct lua_object_descriptor *desc, void *struct_ptr,
-			size_t desc_size, int table_index)
+int lua_zephyr_decode(lua_State *L, const struct lua_zephyr_table_descr *desc, void *struct_ptr,
+		      size_t desc_size, int table_index)
 {
 	int err;
 
@@ -125,8 +125,8 @@ int lua_table_to_struct(lua_State *L, const struct lua_object_descriptor *desc, 
 	return 0;
 }
 
-int struct_to_lua_table(lua_State *L, const struct lua_object_descriptor *desc,
-			const void *struct_ptr, size_t desc_size)
+int lua_zephyr_encode(lua_State *L, const struct lua_zephyr_table_descr *desc,
+		      const void *struct_ptr, size_t desc_size)
 {
 	int err;
 

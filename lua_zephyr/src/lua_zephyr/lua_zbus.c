@@ -38,7 +38,7 @@ static int chan_pub(lua_State *L)
 
 	const struct user_data_wrapper *ud = zbus_chan_user_data(*chan);
 
-	err = lua_table_to_struct(L, ud->desc, msg, ud->desc_size, 3);
+	err = lua_zephyr_decode(L, ud->desc, msg, ud->desc_size, 3);
 	if (err == 0) {
 		err = zbus_chan_pub(*chan, msg, K_MSEC(timeout_ms));
 	}
@@ -71,7 +71,7 @@ static int chan_read(lua_State *L)
 		return luaL_error(L, "channel user data is not set");
 	}
 
-	err = struct_to_lua_table(L, ud->desc, msg, ud->desc_size);
+	err = lua_zephyr_encode(L, ud->desc, msg, ud->desc_size);
 	if (err < 0) {
 		return luaL_error(L, "failed to convert message to Lua table: %d", err);
 	}
@@ -147,7 +147,7 @@ static int sub_wait_msg(lua_State *L)
 			return luaL_error(L, "channel user data is not set");
 		}
 
-		err = struct_to_lua_table(L, ud->desc, msg, ud->desc_size);
+		err = lua_zephyr_encode(L, ud->desc, msg, ud->desc_size);
 		if (err < 0) {
 			return luaL_error(L, "failed to convert message to Lua table: %d", err);
 		}
