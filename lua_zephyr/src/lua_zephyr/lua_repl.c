@@ -106,7 +106,7 @@ static int lua_repl_cmd(const struct shell *sh, size_t argc, char **argv, void *
 
 	shell_print(
 		sh,
-		"\nZephyr Lua v5.4.7 REPL. Press Ctrl+D to exit or Ctrl+L to clear the screen.\n");
+		"\nZephyr " LUA_RELEASE " REPL. Press Ctrl+D to exit or Ctrl+L to clear the screen.\n");
 
 	while (true) {
 		shell_fprintf(sh, SHELL_NORMAL, "lua> ");
