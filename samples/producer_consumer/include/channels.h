@@ -12,6 +12,12 @@ struct msg_acc_data {
 };
 ZBUS_CHAN_DECLARE(chan_acc_data); /* Type: struct msg_acc_data */
 
+struct msg_acc_data_array {
+	size_t count;
+	int data[3];
+};
+ZBUS_CHAN_DECLARE(chan_acc_data_array); /* Type: struct msg_acc_data_array */
+
 struct msg_acc_data_consumed {
 	int count;
 };

@@ -19,6 +19,7 @@ int producer_lua_setup(lua_State *L)
 	LUA_REQUIRE(zbus);
 
 	LUA_ZBUS_CHAN_DECLARE(chan_acc_data);
+	LUA_ZBUS_CHAN_DECLARE(chan_acc_data_array);
 	LUA_ZBUS_CHAN_DECLARE(chan_acc_data_consumed);
 	LUA_ZBUS_CHAN_DECLARE(chan_version);
 	LUA_ZBUS_OBS_DECLARE(msub_acc_consumed);

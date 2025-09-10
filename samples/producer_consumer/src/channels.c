@@ -12,6 +12,12 @@ static const struct lua_zephyr_table_descr acc_data[] = {
 };
 LUA_ZEPHYR_WRAPPER_DESC(acc_data);
 
+static const struct lua_zephyr_table_descr acc_data_array[] = {
+	LUA_TABLE_FIELD_DESCRIPTOR_ARRAY(struct msg_acc_data_array, data,
+					 LUA_CODEC_VALUE_TYPE_INTEGER, count),
+};
+LUA_ZEPHYR_WRAPPER_DESC(acc_data_array);
+
 static const struct lua_zephyr_table_descr consumed[] = {
 	LUA_TABLE_FIELD_DESCRIPTOR_PRIM(struct msg_acc_data_consumed, count,
 					LUA_CODEC_VALUE_TYPE_INTEGER),
@@ -29,6 +35,9 @@ LUA_ZEPHYR_WRAPPER_DESC(version);
 
 ZBUS_CHAN_DEFINE(chan_acc_data, struct msg_acc_data, NULL, (void *)&ud_acc_data,
 		 ZBUS_OBSERVERS_EMPTY, ZBUS_MSG_INIT(.x = 0, .y = 0, .z = 0, .source = ""));
+
+ZBUS_CHAN_DEFINE(chan_acc_data_array, struct msg_acc_data_array, NULL, (void *)&ud_acc_data_array,
+		 ZBUS_OBSERVERS_EMPTY, ZBUS_MSG_INIT(.count = 0, .data = {0, 0, 0}));
 
 ZBUS_CHAN_DEFINE(chan_acc_data_consumed, struct msg_acc_data_consumed, NULL, (void *)&ud_consumed,
 		 ZBUS_OBSERVERS_EMPTY, ZBUS_MSG_INIT(.count = 0));

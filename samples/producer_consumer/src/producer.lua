@@ -30,6 +30,19 @@ while i < 10 do
 		zephyr.printk("Could not pub to channel")
 	end
 
+	local data_array = {
+		acc_data.x,
+		acc_data.y,
+		acc_data.z,
+	}
+
+	local acc_data_array = { data = data_array }
+
+	err = zbus.chan_acc_data_array:pub(200, acc_data_array)
+	if err ~= 0 then
+		zephyr.printk("Could not pub to channel")
+	end
+
 	err, _, msg = zbus.msub_acc_consumed:wait_msg(250)
 
 	if err ~= 0 then
