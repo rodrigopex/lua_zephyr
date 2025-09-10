@@ -10,6 +10,7 @@ enum lua_codec_value_type {
 	LUA_CODEC_VALUE_TYPE_NUMBER,
 	LUA_CODEC_VALUE_TYPE_STRING,
 	LUA_CODEC_VALUE_TYPE_INTEGER,
+	LUA_CODEC_VALUE_TYPE_ARRAY,
 };
 
 struct user_data_wrapper {
@@ -23,6 +24,8 @@ struct lua_zephyr_table_descr {
 	size_t element_name_len;
 	size_t offset;
 	size_t size;
+	size_t arr_len_offset;
+	enum lua_codec_value_type array_element_type;
 };
 
 #define LUA_ZEPHYR_WRAPPER_DESC(desc_)                                                             \
@@ -37,6 +40,17 @@ struct lua_zephyr_table_descr {
 			.element_name_len = sizeof(STRINGIFY(field_name_)) - 1,                    \
 						   .offset = offsetof(struct_, field_name_),       \
 						   .size = sizeof(((struct_ *)0)->field_name_),    \
+			}
+
+#define LUA_TABLE_FIELD_DESCRIPTOR_ARRAY(struct_, field_name_, type_, size_member_)                \
+	{                                                                                          \
+		.element_name = STRINGIFY(field_name_), .type = LUA_CODEC_VALUE_TYPE_ARRAY,                          \
+			.element_name_len =                                                        \
+				sizeof(STRINGIFY(field_name_)) - 1,                                \
+				       .offset = offsetof(struct_, field_name_),                   \
+				       .size = sizeof(((struct_ *)0)->field_name_),                \
+				       .arr_len_offset = offsetof(struct_, size_member_),          \
+				       .array_element_type = type_,                                \
 			}
 
 int lua_zephyr_decode(lua_State *L, const struct lua_zephyr_table_descr *desc, void *struct_ptr,
