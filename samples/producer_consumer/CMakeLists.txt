@@ -7,6 +7,12 @@ set(ZEPHYR_EXTRA_MODULES "${CMAKE_CURRENT_SOURCE_DIR}/../../lua_zephyr/")
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(producer_consumer)
 
+list(APPEND CMAKE_MODULE_PATH ${ZEPHYR_BASE}/modules/nanopb)
+include(nanopb)
+
+set(NANOPB_OPTIONS "--c-style")
+zephyr_nanopb_sources(app proto/channels.proto)
+
 include_directories(include/)
 
 add_lua_thread("src/producer.lua")

@@ -20,9 +20,10 @@ enum lua_msg_field_type {
 	LUA_MSG_TYPE_INT,    /* signed int (1/2/4/8 bytes) -> lua_pushinteger */
 	LUA_MSG_TYPE_UINT,   /* unsigned int (1/2/4/8 bytes) -> lua_pushinteger */
 	LUA_MSG_TYPE_NUMBER, /* float/double -> lua_pushnumber */
-	LUA_MSG_TYPE_STRING, /* const char* -> lua_pushstring */
-	LUA_MSG_TYPE_BOOL,   /* bool -> lua_pushboolean */
-	LUA_MSG_TYPE_OBJECT, /* nested struct -> nested Lua table */
+	LUA_MSG_TYPE_STRING,     /* const char* -> lua_pushstring */
+	LUA_MSG_TYPE_STRING_BUF, /* inline char[] -> lua_pushstring */
+	LUA_MSG_TYPE_BOOL,       /* bool -> lua_pushboolean */
+	LUA_MSG_TYPE_OBJECT,     /* nested struct -> nested Lua table */
 };
 
 /**
