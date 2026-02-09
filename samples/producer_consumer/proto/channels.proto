@@ -1,23 +1,23 @@
 syntax = "proto3";
 
-message msg_acc_data {
+message MsgAccData {
     int32 x = 1;
     int32 y = 2;
     int32 z = 3;
 }
 
-message msg_acc_data_consumed {
+message MsgAccDataConsumed {
     int32 count = 1;
 }
 
-message msg_version {
+message MsgVersion {
     uint32 major = 1;
     uint32 minor = 2;
     uint32 patch = 3;
     string hardware_id = 4;
 }
 
-message msg_sensor_config {
+message MsgSensorConfig {
     int32 sensor_id = 1;
-    msg_acc_data offset = 2;
+    MsgAccData offset = 2;
 }

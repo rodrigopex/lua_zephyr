@@ -10,7 +10,6 @@ project(producer_consumer)
 list(APPEND CMAKE_MODULE_PATH ${ZEPHYR_BASE}/modules/nanopb)
 include(nanopb)
 
-set(NANOPB_OPTIONS "--c-style")
 zephyr_nanopb_sources(app proto/channels.proto)
 
 include_directories(include/)
