@@ -57,13 +57,21 @@ static int chan_pub(lua_State *L)
 	luaL_checktype(L, 2, LUA_TTABLE);
 
 	int timeout_ms = luaL_checkinteger(L, 3);
-	uint8_t msg[ZBUS_MSG_CAPACITY] = {};
+
+	void *msg = k_malloc(zbus_chan_msg_size(*chan));
+
+	if (msg == NULL) {
+		lua_pushinteger(L, -ENOMEM);
+		return 1;
+	}
 
 	size_t s = lua_table_to_msg_struct(L, *chan, msg);
 
 	if (s) {
 		err = zbus_chan_pub(*chan, msg, K_MSEC(timeout_ms));
 	}
+
+	k_free(msg);
 
 	lua_pushinteger(L, err);
 
@@ -82,13 +90,21 @@ static int chan_read(lua_State *L)
 	const struct zbus_channel **chan = check_zbus_channel(L, 1);
 	int timeout_ms = luaL_checkinteger(L, 2);
 
-	uint8_t msg[ZBUS_MSG_CAPACITY] = {};
+	void *msg = k_malloc(zbus_chan_msg_size(*chan));
+
+	if (msg == NULL) {
+		lua_pushinteger(L, -ENOMEM);
+		lua_pushnil(L);
+		return 2;
+	}
 
 	err = zbus_chan_read(*chan, msg, K_MSEC(timeout_ms));
 
 	lua_pushinteger(L, err);
 
 	msg_struct_to_lua_table(L, *chan, msg);
+
+	k_free(msg);
 
 	return 2;
 }
@@ -136,10 +152,18 @@ static const struct zbus_observer **check_zbus_observer(lua_State *L, int idx)
 static int sub_wait_msg(lua_State *L)
 {
 	const struct zbus_channel *chan;
-	uint8_t msg[ZBUS_MSG_CAPACITY] = {};
 
 	const struct zbus_observer **obs = check_zbus_observer(L, 1);
 	int timeout_ms = luaL_checkinteger(L, 2);
+
+	void *msg = k_malloc(ZBUS_MSG_CAPACITY);
+
+	if (msg == NULL) {
+		lua_pushinteger(L, -ENOMEM);
+		lua_pushnil(L);
+		lua_pushnil(L);
+		return 3;
+	}
 
 	int err = zbus_sub_wait_msg(*obs, &chan, msg, K_MSEC(timeout_ms));
 
@@ -149,7 +173,6 @@ static int sub_wait_msg(lua_State *L)
 		lua_pushnil(L);
 		lua_pushnil(L);
 	} else {
-
 		const struct zbus_channel **lua_chan =
 			lua_newuserdata(L, sizeof(const struct zbus_channel *));
 		*lua_chan = chan;
@@ -158,6 +181,8 @@ static int sub_wait_msg(lua_State *L)
 
 		msg_struct_to_lua_table(L, chan, msg);
 	}
+
+	k_free(msg);
 
 	return 3;
 }
