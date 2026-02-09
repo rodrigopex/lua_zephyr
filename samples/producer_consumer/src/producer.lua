@@ -7,6 +7,18 @@ if msg then
 	zephyr.printk("System version: v" .. msg.major .. "." .. msg.minor .. "." .. msg.patch .. "_" .. msg.hardware_id)
 end
 
+local sensor_cfg = { sensor_id = 42, offset = { x = 1, y = 2, z = 3 } }
+err = zbus.chan_sensor_config:pub(sensor_cfg, 200)
+if err == 0 then
+	err, msg = zbus.chan_sensor_config:read(200)
+	if msg then
+		zephyr.printk("Nested: sensor_id=" .. msg.sensor_id
+			.. " offset.x=" .. msg.offset.x
+			.. " offset.y=" .. msg.offset.y
+			.. " offset.z=" .. msg.offset.z)
+	end
+end
+
 local getrandom = function(seed)
 	local A1 = 71047
 	local B1 = 8810
@@ -14,7 +26,7 @@ local getrandom = function(seed)
 	return (A1 * seed + B1) % M1
 end
 
-local acc_data = { type = "msg_acc_data", x = 0, y = 0, z = 0 }
+local acc_data = { x = 0, y = 0, z = 0 }
 
 local i = 1
 

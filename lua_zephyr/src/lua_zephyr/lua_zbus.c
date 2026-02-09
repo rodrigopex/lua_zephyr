@@ -4,6 +4,7 @@
 #include <zephyr/zbus/zbus.h>
 #include <lua_zephyr/utils.h>
 #include <lua_zephyr/zbus.h>
+#include <lua_zephyr/lua_msg_descr.h>
 #include <zephyr/kernel.h>
 
 /* Metatable name for our userdata */
@@ -21,12 +22,24 @@ static const struct zbus_channel **check_zbus_channel(lua_State *L, int idx)
 
 int __weak msg_struct_to_lua_table(lua_State *L, const struct zbus_channel *chan, void *message)
 {
-	lua_pushnil(L);
+	const struct lua_msg_descr *descr = zbus_chan_user_data(chan);
+
+	if (descr != NULL) {
+		lua_msg_descr_to_table(L, descr->fields, descr->field_count, message);
+	} else {
+		lua_pushnil(L);
+	}
 	return 1;
 }
 
-size_t __weak lua_table_to_msg_struct(lua_State *L, void *message)
+size_t __weak lua_table_to_msg_struct(lua_State *L, const struct zbus_channel *chan, void *message)
 {
+	const struct lua_msg_descr *descr = zbus_chan_user_data(chan);
+
+	if (descr != NULL) {
+		lua_msg_descr_from_table(L, descr->fields, descr->field_count, message, 2);
+		return descr->msg_size;
+	}
 	return 0;
 }
 
@@ -46,7 +59,7 @@ static int chan_pub(lua_State *L)
 	int timeout_ms = luaL_checkinteger(L, 3);
 	uint8_t msg[ZBUS_MSG_CAPACITY] = {};
 
-	size_t s = lua_table_to_msg_struct(L, msg);
+	size_t s = lua_table_to_msg_struct(L, *chan, msg);
 
 	if (s) {
 		err = zbus_chan_pub(*chan, msg, K_MSEC(timeout_ms));

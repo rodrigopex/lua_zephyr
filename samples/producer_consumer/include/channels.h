@@ -14,7 +14,7 @@ ZBUS_CHAN_DECLARE(chan_acc_data); /* Type: struct msg_acc_data */
 struct msg_acc_data_consumed {
 	int count;
 };
-ZBUS_CHAN_DECLARE(chan_acc_data_consumed); /* Type: struct msg_acc_data_ack */
+ZBUS_CHAN_DECLARE(chan_acc_data_consumed); /* Type: struct msg_acc_data_consumed */
 
 struct msg_version {
 	uint8_t major;
@@ -22,6 +22,12 @@ struct msg_version {
 	uint8_t patch;
 	const char *hardware_id;
 };
-ZBUS_CHAN_DECLARE(chan_version); /* Type: struct msg_acc_data_ack */
+ZBUS_CHAN_DECLARE(chan_version); /* Type: struct msg_version */
+
+struct msg_sensor_config {
+	int sensor_id;
+	struct msg_acc_data offset;
+};
+ZBUS_CHAN_DECLARE(chan_sensor_config); /* Type: struct msg_sensor_config */
 
 #endif /* !CONSUMER_H */

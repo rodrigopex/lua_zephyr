@@ -10,6 +10,7 @@ tests:
       type: multi_line
       ordered: true
       regex:
+        - "Nested: sensor_id=42 offset\\.x=1 offset\\.y=2 offset\\.z=3"
         - "<-- Lua producing data"
         - " 1 - Accelerometer data x=\\d\\d,y=\\d\\d,z=\\d\\d"
         - "--> Lua received ack 1"
