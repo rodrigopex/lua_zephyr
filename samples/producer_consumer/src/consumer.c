@@ -11,8 +11,8 @@ void consumer_thread(void *p1, void *p2, void *p3)
 	ARG_UNUSED(p3);
 
 	const struct zbus_channel *chan;
-	struct msg_acc_data msg;
-	struct msg_acc_data_consumed ack_msg = {.count = 0};
+	MsgAccData msg;
+	MsgAccDataConsumed ack_msg = {.count = 0};
 
 	while (1) {
 		zbus_sub_wait_msg(&msub_consumer, &chan, &msg, K_FOREVER);
