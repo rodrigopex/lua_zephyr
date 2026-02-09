@@ -75,6 +75,9 @@ void lua_msg_descr_to_table(lua_State *L, const struct lua_msg_field_descr *fiel
 		case LUA_MSG_TYPE_STRING:
 			lua_pushstring(L, *(const char *const *)ptr);
 			break;
+		case LUA_MSG_TYPE_STRING_BUF:
+			lua_pushstring(L, (const char *)ptr);
+			break;
 		case LUA_MSG_TYPE_BOOL:
 			lua_pushboolean(L, *(const bool *)ptr);
 			break;
@@ -153,6 +156,15 @@ void lua_msg_descr_from_table(lua_State *L, const struct lua_msg_field_descr *fi
 		case LUA_MSG_TYPE_STRING:
 			*(const char **)ptr = lua_tostring(L, -1);
 			break;
+		case LUA_MSG_TYPE_STRING_BUF: {
+			const char *s = lua_tostring(L, -1);
+
+			if (s) {
+				strncpy((char *)ptr, s, f->size - 1);
+				((char *)ptr)[f->size - 1] = '\0';
+			}
+			break;
+		}
 		case LUA_MSG_TYPE_BOOL:
 			*(bool *)ptr = lua_toboolean(L, -1);
 			break;

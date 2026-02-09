@@ -1,33 +1,12 @@
-#ifndef CONSUMER_H
-#define CONSUMER_H
+#ifndef CHANNELS_H
+#define CHANNELS_H
 
-#include <lualib.h>
 #include <zephyr/zbus/zbus.h>
+#include "proto/channels.pb.h"
 
-struct msg_acc_data {
-	int x;
-	int y;
-	int z;
-};
-ZBUS_CHAN_DECLARE(chan_acc_data); /* Type: struct msg_acc_data */
+ZBUS_CHAN_DECLARE(chan_acc_data);
+ZBUS_CHAN_DECLARE(chan_acc_data_consumed);
+ZBUS_CHAN_DECLARE(chan_version);
+ZBUS_CHAN_DECLARE(chan_sensor_config);
 
-struct msg_acc_data_consumed {
-	int count;
-};
-ZBUS_CHAN_DECLARE(chan_acc_data_consumed); /* Type: struct msg_acc_data_consumed */
-
-struct msg_version {
-	uint8_t major;
-	uint8_t minor;
-	uint8_t patch;
-	const char *hardware_id;
-};
-ZBUS_CHAN_DECLARE(chan_version); /* Type: struct msg_version */
-
-struct msg_sensor_config {
-	int sensor_id;
-	struct msg_acc_data offset;
-};
-ZBUS_CHAN_DECLARE(chan_sensor_config); /* Type: struct msg_sensor_config */
-
-#endif /* !CONSUMER_H */
+#endif /* !CHANNELS_H */
