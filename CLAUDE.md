@@ -71,6 +71,26 @@ Weakly-defined conversion hooks allow applications to customize message serializ
 
 The descriptor system (`lua_msg_descr.h`) stores descriptors as zbus channel `user_data` for O(1) lookup. Pass `LUA_ZBUS_MSG_DESCR(type, fields)` as the `_user_data` argument to `ZBUS_CHAN_DEFINE` — it creates a compound-literal descriptor inline. The `__weak` defaults in `lua_zbus.c` check `zbus_chan_user_data()` and call `lua_msg_descr_to_table`/`lua_msg_descr_from_table` automatically. Apps can still provide strong overrides. Nested struct support via `LUA_MSG_TYPE_OBJECT` / `LUA_MSG_FIELD_OBJECT`.
 
+### nanopb Descriptor Bridge (`lua_msg_descr_pb.h`)
+
+`LUA_PB_DESCR_DEFINE(_name)` auto-generates `lua_msg_field_descr` arrays from nanopb `FIELDLIST` X-macros, making `.proto` the single source of truth.
+
+Nested MESSAGE fields are resolved automatically via nanopb's `<parent_t>_<field>_MSGTYPE` macros. **Child descriptors must be defined before parents** (leaf-first ordering):
+
+```c
+/* msg_acc_data has no dependencies — define first */
+LUA_PB_DESCR_DEFINE(msg_acc_data);
+ZBUS_CHAN_DEFINE(chan_acc_data, struct msg_acc_data, NULL,
+                 LUA_PB_DESCR_REF(msg_acc_data), ...);
+
+/* msg_sensor_config contains a msg_acc_data "offset" field — define after */
+LUA_PB_DESCR_DEFINE(msg_sensor_config);
+ZBUS_CHAN_DEFINE(chan_sensor_config, struct msg_sensor_config, NULL,
+                 LUA_PB_DESCR_REF(msg_sensor_config), ...);
+```
+
+Deeper nesting (3+ levels) works the same way — always define leaf types first. `LUA_PB_DESCR_REF(_name)` returns a `void *` suitable for `ZBUS_CHAN_DEFINE` `_user_data`.
+
 ### Key Kconfig Options
 
 `CONFIG_LUA`, `CONFIG_LUA_REPL`, `CONFIG_LUA_THREAD_STACK_SIZE`, `CONFIG_LUA_THREAD_HEAP_SIZE`, `CONFIG_LUA_THREAD_PRIORITY`

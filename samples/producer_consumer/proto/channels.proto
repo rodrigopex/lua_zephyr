@@ -1,23 +1,25 @@
 syntax = "proto3";
 
+import "nanopb.proto";
+
 message MsgAccData {
-    int32 x = 1;
-    int32 y = 2;
-    int32 z = 3;
+  int32 x = 1;
+  int32 y = 2;
+  int32 z = 3;
 }
 
 message MsgAccDataConsumed {
-    int32 count = 1;
+  int32 count = 1;
 }
 
 message MsgVersion {
-    uint32 major = 1;
-    uint32 minor = 2;
-    uint32 patch = 3;
-    string hardware_id = 4;
+  uint32 major = 1;
+  uint32 minor = 2;
+  uint32 patch = 3;
+  string hardware_id = 4 [(nanopb).max_size = 16];
 }
 
 message MsgSensorConfig {
-    int32 sensor_id = 1;
-    MsgAccData offset = 2;
+  int32 sensor_id = 1;
+  MsgAccData offset = 2;
 }

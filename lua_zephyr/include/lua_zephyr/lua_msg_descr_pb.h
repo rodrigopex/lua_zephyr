@@ -10,15 +10,17 @@
  *   #include <lua_zephyr/lua_msg_descr_pb.h>
  *   #include "channels.pb.h"
  *
+ *   LUA_PB_DESCR_DEFINE(msg_acc_data);
  *   ZBUS_CHAN_DEFINE(chan_acc_data, struct msg_acc_data, NULL,
- *                    LUA_PB_DESCR(msg_acc_data), ...);
+ *                    LUA_PB_DESCR_REF(msg_acc_data), ...);
  *
- * For nested MESSAGE fields, set LUA_PB_SUBMSG_<fieldname> before use:
+ * For nested MESSAGE fields, ensure the child descriptor is defined before
+ * the parent (leaf-first ordering). The parent auto-resolves submessage
+ * fields via nanopb's <parent_t>_<field>_MSGTYPE macros:
  *
- *   #define LUA_PB_SUBMSG_offset LUA_PB_FIELDS(msg_acc_data)
- *   ZBUS_CHAN_DEFINE(chan_sensor_config, struct msg_sensor_config, NULL,
- *                    LUA_PB_DESCR(msg_sensor_config), ...);
- *   #undef LUA_PB_SUBMSG_offset
+ *   LUA_PB_DESCR_DEFINE(msg_acc_data);
+ *   LUA_PB_DESCR_DEFINE(msg_sensor_config);
+ *   ZBUS_CHAN_DEFINE(chan_sensor_config, ...);
  *
  * Limitations:
  *   - ONEOF fields not supported (fieldname is a tuple)
@@ -33,37 +35,52 @@
 
 /* clang-format off */
 
+/** @brief Token-paste helpers with double expansion for macro argument resolution. */
+#define LUA_PB_CAT(a, b)  a##b
+#define LUA_PB_CAT2(a, b) LUA_PB_CAT(a, b)
+
 /**
  * @brief Type-mapping macros: nanopb ltype -> LUA_MSG_FIELD invocation.
  *
  * Each LUA_PB_GEN_<ltype> maps a nanopb logical type to the appropriate
- * lua_msg_field_descr entry.
+ * lua_msg_field_descr entry. The _name parameter is the struct tag name
+ * (without 'struct' prefix); the 'struct' keyword is added internally.
  */
-#define LUA_PB_GEN_BOOL(s, f)            LUA_MSG_FIELD(s, f, LUA_MSG_TYPE_BOOL)
-#define LUA_PB_GEN_INT32(s, f)           LUA_MSG_FIELD(s, f, LUA_MSG_TYPE_INT)
-#define LUA_PB_GEN_SINT32(s, f)          LUA_MSG_FIELD(s, f, LUA_MSG_TYPE_INT)
-#define LUA_PB_GEN_SFIXED32(s, f)        LUA_MSG_FIELD(s, f, LUA_MSG_TYPE_INT)
-#define LUA_PB_GEN_INT64(s, f)           LUA_MSG_FIELD(s, f, LUA_MSG_TYPE_INT)
-#define LUA_PB_GEN_SINT64(s, f)          LUA_MSG_FIELD(s, f, LUA_MSG_TYPE_INT)
-#define LUA_PB_GEN_SFIXED64(s, f)        LUA_MSG_FIELD(s, f, LUA_MSG_TYPE_INT)
-#define LUA_PB_GEN_UINT32(s, f)          LUA_MSG_FIELD(s, f, LUA_MSG_TYPE_UINT)
-#define LUA_PB_GEN_FIXED32(s, f)         LUA_MSG_FIELD(s, f, LUA_MSG_TYPE_UINT)
-#define LUA_PB_GEN_UINT64(s, f)          LUA_MSG_FIELD(s, f, LUA_MSG_TYPE_UINT)
-#define LUA_PB_GEN_FIXED64(s, f)         LUA_MSG_FIELD(s, f, LUA_MSG_TYPE_UINT)
-#define LUA_PB_GEN_FLOAT(s, f)           LUA_MSG_FIELD(s, f, LUA_MSG_TYPE_NUMBER)
-#define LUA_PB_GEN_DOUBLE(s, f)          LUA_MSG_FIELD(s, f, LUA_MSG_TYPE_NUMBER)
-#define LUA_PB_GEN_STRING(s, f)          LUA_MSG_FIELD(s, f, LUA_MSG_TYPE_STRING_BUF)
-#define LUA_PB_GEN_ENUM(s, f)            LUA_MSG_FIELD(s, f, LUA_MSG_TYPE_INT)
-#define LUA_PB_GEN_UENUM(s, f)           LUA_MSG_FIELD(s, f, LUA_MSG_TYPE_UINT)
-#define LUA_PB_GEN_MESSAGE(s, f)                                       \
-	{                                                              \
-		.field_name = #f,                                      \
-		.type = LUA_MSG_TYPE_OBJECT,                           \
-		.offset = offsetof(s, f),                              \
-		.size = sizeof(((s *)0)->f),                           \
-		.sub_fields = LUA_PB_SUBMSG_##f,                       \
-		.sub_field_count = sizeof(LUA_PB_SUBMSG_##f)           \
-			/ sizeof(struct lua_msg_field_descr),           \
+#define LUA_PB_GEN_BOOL(_name, f)            LUA_MSG_FIELD(struct _name, f, LUA_MSG_TYPE_BOOL)
+#define LUA_PB_GEN_INT32(_name, f)           LUA_MSG_FIELD(struct _name, f, LUA_MSG_TYPE_INT)
+#define LUA_PB_GEN_SINT32(_name, f)          LUA_MSG_FIELD(struct _name, f, LUA_MSG_TYPE_INT)
+#define LUA_PB_GEN_SFIXED32(_name, f)        LUA_MSG_FIELD(struct _name, f, LUA_MSG_TYPE_INT)
+#define LUA_PB_GEN_INT64(_name, f)           LUA_MSG_FIELD(struct _name, f, LUA_MSG_TYPE_INT)
+#define LUA_PB_GEN_SINT64(_name, f)          LUA_MSG_FIELD(struct _name, f, LUA_MSG_TYPE_INT)
+#define LUA_PB_GEN_SFIXED64(_name, f)        LUA_MSG_FIELD(struct _name, f, LUA_MSG_TYPE_INT)
+#define LUA_PB_GEN_UINT32(_name, f)          LUA_MSG_FIELD(struct _name, f, LUA_MSG_TYPE_UINT)
+#define LUA_PB_GEN_FIXED32(_name, f)         LUA_MSG_FIELD(struct _name, f, LUA_MSG_TYPE_UINT)
+#define LUA_PB_GEN_UINT64(_name, f)          LUA_MSG_FIELD(struct _name, f, LUA_MSG_TYPE_UINT)
+#define LUA_PB_GEN_FIXED64(_name, f)         LUA_MSG_FIELD(struct _name, f, LUA_MSG_TYPE_UINT)
+#define LUA_PB_GEN_FLOAT(_name, f)           LUA_MSG_FIELD(struct _name, f, LUA_MSG_TYPE_NUMBER)
+#define LUA_PB_GEN_DOUBLE(_name, f)          LUA_MSG_FIELD(struct _name, f, LUA_MSG_TYPE_NUMBER)
+#define LUA_PB_GEN_STRING(_name, f)          LUA_MSG_FIELD(struct _name, f, LUA_MSG_TYPE_STRING_BUF)
+#define LUA_PB_GEN_ENUM(_name, f)            LUA_MSG_FIELD(struct _name, f, LUA_MSG_TYPE_INT)
+#define LUA_PB_GEN_UENUM(_name, f)           LUA_MSG_FIELD(struct _name, f, LUA_MSG_TYPE_UINT)
+
+/**
+ * @brief Auto-resolve nested MESSAGE fields via nanopb MSGTYPE macros.
+ *
+ * Uses <parent_t>_<field>_MSGTYPE (generated by nanopb) and double-expansion
+ * token pasting to resolve the child's lua_fields array automatically.
+ * Requires the child LUA_PB_DESCR_DEFINE to precede the parent (leaf-first).
+ */
+#define LUA_PB_GEN_MESSAGE(_name, f)                                           \
+	{                                                                      \
+		.field_name = #f,                                              \
+		.type = LUA_MSG_TYPE_OBJECT,                                   \
+		.offset = offsetof(struct _name, f),                           \
+		.size = sizeof(((struct _name *)0)->f),                        \
+		.sub_fields = LUA_PB_CAT2(_name##_t_##f##_MSGTYPE,            \
+					  _lua_fields),                        \
+		.sub_field_count = sizeof(                                     \
+			LUA_PB_CAT2(_name##_t_##f##_MSGTYPE, _lua_fields))    \
+			/ sizeof(struct lua_msg_field_descr),                  \
 	}
 
 /**
@@ -72,54 +89,40 @@
  * Called by the nanopb-generated FIELDLIST macro for each field.
  * Ignores atype, htype, and tag; dispatches solely on ltype.
  *
- * @param structtype  The C struct type (passed as the accumulator 'a').
+ * @param _name       The struct tag name (passed as the accumulator 'a').
  * @param atype       Allocation type (STATIC, POINTER, CALLBACK) - ignored.
  * @param htype       Handling type (REQUIRED, OPTIONAL, etc.) - ignored.
  * @param ltype       Logical type (INT32, UINT32, STRING, etc.) - used for dispatch.
  * @param fieldname   The C struct field name.
  * @param tag         Proto field tag number - ignored.
  */
-#define LUA_PB_GEN_FIELD(structtype, atype, htype, ltype, fieldname, tag) \
-	LUA_PB_GEN_##ltype(structtype, fieldname),
+#define LUA_PB_GEN_FIELD(_name, atype, htype, ltype, fieldname, tag) \
+	LUA_PB_GEN_##ltype(_name, fieldname),
 
 /**
- * @brief X-macro callback for submessage fields (avoids preprocessor
- *        blue-painting when nested inside LUA_PB_GEN_FIELD expansion).
- */
-#define LUA_PB_GEN_SUB_FIELD(structtype, atype, htype, ltype, fieldname, tag) \
-	LUA_PB_GEN_##ltype(structtype, fieldname),
-
-/**
- * @brief Compound literal for a nanopb fields array.
+ * @brief Define a named descriptor and fields array from a nanopb FIELDLIST.
  *
- * Use to define LUA_PB_SUBMSG_<field> for nested MESSAGE fields.
+ * Creates a static const field array <_name>_t_lua_fields[] and a descriptor
+ * struct <_name>_descr. The named array enables automatic submessage resolution
+ * via nanopb's MSGTYPE macros.
+ *
+ * Child descriptors must be defined before parents (leaf-first ordering).
  *
  * @param _name  The struct tag name (e.g. msg_acc_data).
  */
-#define LUA_PB_FIELDS(_name)                                                   \
-	((const struct lua_msg_field_descr[]){                                 \
-		_name##_FIELDLIST(LUA_PB_GEN_SUB_FIELD, struct _name)          \
-	})
-
-/**
- * @brief Create a compound-literal descriptor from a nanopb FIELDLIST.
- *
- * Returns (void *) suitable for ZBUS_CHAN_DEFINE user_data.
- *
- * @param _name  The struct tag name (e.g. msg_acc_data).
- */
-#define LUA_PB_DESCR_DEFINE(_name)                                                    \
-	const struct lua_msg_descr CONCAT(_name, _descr) = {                                \
-		.fields = (const struct lua_msg_field_descr[]){                \
-			_name##_FIELDLIST(LUA_PB_GEN_FIELD, struct _name)      \
-		},                                                             \
-		.field_count = sizeof((const struct lua_msg_field_descr[]){    \
-			_name##_FIELDLIST(LUA_PB_GEN_FIELD, struct _name)      \
-		}) / sizeof(struct lua_msg_field_descr),                       \
+#define LUA_PB_DESCR_DEFINE(_name)                                             \
+	static const struct lua_msg_field_descr _name##_t_lua_fields[] = {     \
+		_name##_FIELDLIST(LUA_PB_GEN_FIELD, _name)                     \
+	};                                                                     \
+	const struct lua_msg_descr CONCAT(_name, _descr) = {                   \
+		.fields = _name##_t_lua_fields,                                \
+		.field_count = sizeof(_name##_t_lua_fields)                    \
+			/ sizeof(struct lua_msg_field_descr),                  \
 		.msg_size = sizeof(struct _name),                              \
 	}
 
-#define LUA_PB_DESCR_REF(_name) ((void*)&CONCAT(_name, _descr))
+#define LUA_PB_DESCR_REF(_name) ((void *)&CONCAT(_name, _descr))
+
 /* clang-format on */
 
 #endif /* LUA_MSG_DESCR_PB_H */
