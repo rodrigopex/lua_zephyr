@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+# Restrictions
+
+We are not going to change and LUA source files. They are inside the @lua_zephyr/include and @lua_zephyr/src. The only exception is the @lua_zephyr/src/lua_zephyr and @lua_zephyr/include/lua_zephyr folders.
+
 ## Project
 
 Zephyr RTOS module integrating Lua 5.4.7 as a first-class scripting engine for embedded systems. Lua scripts run in dedicated threads with isolated heaps; IPC happens via zbus channels.
@@ -10,19 +14,20 @@ Zephyr RTOS module integrating Lua 5.4.7 as a first-class scripting engine for e
 
 Uses `just` (justfile) with West/CMake underneath. Default board: `qemu_cortex_m3`.
 
-| Command | Alias | Description |
-|---------|-------|-------------|
-| `just build` | `just b` | Build (`west build -d ./build -b qemu_cortex_m3 app`) |
-| `just rebuild` | `just bb` | Rebuild without full reconfigure |
-| `just clean` | `just c` | Remove build directory |
-| `just run` | `just r` | Build and run in QEMU |
-| `just config` | | Open menuconfig |
-| `just debugserver` | `just ds` | Start QEMU GDB server |
-| `just attach` | `just da` | Attach GDB to running debug session |
+| Command            | Alias     | Description                                           |
+| ------------------ | --------- | ----------------------------------------------------- |
+| `just build`       | `just b`  | Build (`west build -d ./build -b qemu_cortex_m3 app`) |
+| `just rebuild`     | `just bb` | Rebuild without full reconfigure                      |
+| `just clean`       | `just c`  | Remove build directory                                |
+| `just run`         | `just r`  | Build and run in QEMU                                 |
+| `just config`      |           | Open menuconfig                                       |
+| `just debugserver` | `just ds` | Start QEMU GDB server                                 |
+| `just attach`      | `just da` | Attach GDB to running debug session                   |
 
 ### Running Tests
 
 Tests use Zephyr's twister harness. Each sample has a `sample.yaml` defining console-based test expectations:
+
 ```sh
 west twister -T samples/ -p qemu_x86
 ```
@@ -52,6 +57,7 @@ clang-format -i <file>   # Uses .clang-format (Zephyr-aligned LLVM, 8-space inde
 ### Thread Model
 
 Each `add_lua_thread()` call generates a Zephyr thread with:
+
 - Dedicated `sys_heap` (`CONFIG_LUA_THREAD_HEAP_SIZE`, default 32KB)
 - Dedicated stack (`CONFIG_LUA_THREAD_STACK_SIZE`, default 2KB)
 - Custom Lua allocator backed by the thread's heap
@@ -59,6 +65,7 @@ Each `add_lua_thread()` call generates a Zephyr thread with:
 ### zbus Integration
 
 Weakly-defined conversion hooks allow applications to customize message serialization:
+
 - `msg_struct_to_lua_table(L, chan, message)` — C struct → Lua table
 - `lua_table_to_msg_struct(L, chan, message)` — Lua table → C struct
 
