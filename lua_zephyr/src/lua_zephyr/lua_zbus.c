@@ -24,6 +24,36 @@
 /** @brief Maximum message buffer size for sub_wait_msg. */
 #define ZBUS_MSG_CAPACITY 512
 
+/**
+ * @brief Allocate raw memory from the Lua state's heap allocator.
+ *
+ * @param L     Lua state whose allocator is used.
+ * @param size  Number of bytes to allocate.
+ * @return Pointer to allocated block, or NULL on failure.
+ */
+static void *lua_alloc_raw(lua_State *L, size_t size)
+{
+	void *ud;
+	lua_Alloc allocf = lua_getallocf(L, &ud);
+
+	return allocf(ud, NULL, 0, size);
+}
+
+/**
+ * @brief Free raw memory previously obtained from lua_alloc_raw().
+ *
+ * @param L     Lua state whose allocator is used.
+ * @param ptr   Pointer to the block to free.
+ * @param size  Original allocation size (must match the alloc call).
+ */
+static void lua_free_raw(lua_State *L, void *ptr, size_t size)
+{
+	void *ud;
+	lua_Alloc allocf = lua_getallocf(L, &ud);
+
+	allocf(ud, ptr, size, 0);
+}
+
 /** @brief Validate and return the zbus channel userdata at stack index @p idx. */
 static const struct zbus_channel **check_zbus_channel(lua_State *L, int idx)
 {
@@ -93,7 +123,8 @@ static int chan_pub(lua_State *L)
 
 	int timeout_ms = luaL_checkinteger(L, 3);
 
-	void *msg = k_malloc(zbus_chan_msg_size(*chan));
+	size_t msg_size = zbus_chan_msg_size(*chan);
+	void *msg = lua_alloc_raw(L, msg_size);
 
 	if (msg == NULL) {
 		lua_pushinteger(L, -ENOMEM);
@@ -106,7 +137,7 @@ static int chan_pub(lua_State *L)
 		err = zbus_chan_pub(*chan, msg, K_MSEC(timeout_ms));
 	}
 
-	k_free(msg);
+	lua_free_raw(L, msg, msg_size);
 
 	lua_pushinteger(L, err);
 
@@ -126,7 +157,8 @@ static int chan_read(lua_State *L)
 	const struct zbus_channel **chan = check_zbus_channel(L, 1);
 	int timeout_ms = luaL_checkinteger(L, 2);
 
-	void *msg = k_malloc(zbus_chan_msg_size(*chan));
+	size_t msg_size = zbus_chan_msg_size(*chan);
+	void *msg = lua_alloc_raw(L, msg_size);
 
 	if (msg == NULL) {
 		lua_pushinteger(L, -ENOMEM);
@@ -140,7 +172,7 @@ static int chan_read(lua_State *L)
 
 	msg_struct_to_lua_table(L, *chan, msg);
 
-	k_free(msg);
+	lua_free_raw(L, msg, msg_size);
 
 	return 2;
 }
@@ -196,7 +228,7 @@ static int sub_wait_msg(lua_State *L)
 	const struct zbus_observer **obs = check_zbus_observer(L, 1);
 	int timeout_ms = luaL_checkinteger(L, 2);
 
-	void *msg = k_malloc(ZBUS_MSG_CAPACITY);
+	void *msg = lua_alloc_raw(L, ZBUS_MSG_CAPACITY);
 
 	if (msg == NULL) {
 		lua_pushinteger(L, -ENOMEM);
@@ -222,7 +254,7 @@ static int sub_wait_msg(lua_State *L)
 		msg_struct_to_lua_table(L, chan, msg);
 	}
 
-	k_free(msg);
+	lua_free_raw(L, msg, ZBUS_MSG_CAPACITY);
 
 	return 3;
 }
