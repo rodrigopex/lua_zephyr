@@ -9,7 +9,10 @@ project(producer_consumer)
 
 list(APPEND CMAKE_MODULE_PATH ${ZEPHYR_BASE}/modules/nanopb)
 include(nanopb)
-
+set(NANOPB_OPTIONS
+    "--nanopb_opt=-X"
+    "--nanopb_opt=--custom-style=${CMAKE_CURRENT_SOURCE_DIR}/scripts/nanopb_custom_naming.py.NamingStyleLuaC"
+)
 zephyr_nanopb_sources(app proto/channels.proto)
 
 include_directories(include/)

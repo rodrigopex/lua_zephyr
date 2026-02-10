@@ -6,18 +6,20 @@
  * FIELDLIST macros, making the .proto file the single source of truth for
  * both protobuf serialization and Lua table conversion.
  *
- * Usage (without --c-style nanopb option):
+ * Usage:
  *   #include <lua_zephyr/lua_msg_descr_pb.h>
  *   #include "channels.pb.h"
  *
- *   LUA_PB_DESCR(MsgAccData);
+ *   LUA_PB_DESCR_DEFINE(msg_acc_data);
+ *   ZBUS_CHAN_DEFINE(chan_acc_data, struct msg_acc_data, NULL,
+ *                    LUA_PB_DESCR(msg_acc_data), ...);
  *
  * For nested MESSAGE fields, define submessage descriptors first and
- * set LUA_PB_SUBMSG_<fieldname> before calling LUA_PB_DESCR:
+ * set LUA_PB_SUBMSG_<fieldname> before calling LUA_PB_DESCR_DEFINE:
  *
- *   LUA_PB_DESCR(MsgAccData);
- *   #define LUA_PB_SUBMSG_offset MsgAccData_lua_fields
- *   LUA_PB_DESCR(MsgSensorConfig);
+ *   LUA_PB_DESCR_DEFINE(msg_acc_data);
+ *   #define LUA_PB_SUBMSG_offset msg_acc_data_lua_fields
+ *   LUA_PB_DESCR_DEFINE(msg_sensor_config);
  *   #undef LUA_PB_SUBMSG_offset
  *
  * Limitations:
@@ -74,30 +76,27 @@
 	LUA_PB_GEN_##ltype(structtype, fieldname),
 
 /**
- * @brief Generate a lua_msg_field_descr array from a nanopb FIELDLIST.
+ * @brief Define fields array + descriptor struct from a nanopb FIELDLIST.
  *
- * Single-argument macro: derives the FIELDLIST name and struct type from
- * the nanopb typedef name. Requires nanopb without --c-style so that
- * FIELDLIST macros use the lowercase typedef name as prefix.
+ * Generates <_name>_lua_fields[] and <_name>_lua_descr from
+ * <_name>_FIELDLIST. Use LUA_PB_DESCR(_name) to reference the
+ * descriptor in ZBUS_CHAN_DEFINE user_data.
  *
- * @param _name  The nanopb typedef name (e.g. msg_acc_data).
- *               Generates array <_name>_lua_fields from <_name>_FIELDLIST.
+ * @param _name  The struct tag name (e.g. msg_acc_data).
  */
-#define LUA_PB_DESCR(_name)                                                    \
+#define LUA_PB_DESCR_DEFINE(_name)                                             \
 	static const struct lua_msg_field_descr _name##_lua_fields[] = {       \
-		_name##_FIELDLIST(LUA_PB_GEN_FIELD, _name)                     \
-	}
+		_name##_FIELDLIST(LUA_PB_GEN_FIELD, struct _name)              \
+	};                                                                     \
+	LUA_ZBUS_MSG_DESCR_DEFINE(                                             \
+		_name##_lua_descr, struct _name, _name##_lua_fields)
 
 /**
- * @brief Create an inline zbus user_data descriptor from a nanopb typedef.
+ * @brief Reference descriptor for use in ZBUS_CHAN_DEFINE user_data.
  *
- * Convenience wrapper combining LUA_ZBUS_MSG_DESCR with the naming
- * convention from LUA_PB_DESCR.
- *
- * @param _name  The nanopb typedef name (e.g. msg_acc_data).
+ * @param _name  The nanopb type name (e.g. msg_acc_data).
  */
-#define LUA_PB_ZBUS_MSG_DESCR(_name)                                           \
-	LUA_ZBUS_MSG_DESCR(_name, _name##_lua_fields)
+#define LUA_PB_DESCR(_name) ((void *)&_name##_lua_descr)
 
 /* clang-format on */
 
