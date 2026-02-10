@@ -11,6 +11,18 @@
 #include <string.h>
 #include <zephyr/kernel.h>
 
+/**
+ * @brief Encode C struct fields into a Lua table (push to stack).
+ *
+ * Iterates over @p fields, reads each value from @p base + offset,
+ * and pushes a new Lua table with the corresponding key/value pairs.
+ * Nested LUA_MSG_TYPE_OBJECT fields recurse into sub-descriptors.
+ *
+ * @param L            Lua state.
+ * @param fields       Array of field descriptors.
+ * @param field_count  Number of fields.
+ * @param base         Base pointer to the C struct data.
+ */
 void lua_msg_descr_to_table(lua_State *L, const struct lua_msg_field_descr *fields,
 			    size_t field_count, const void *base)
 {
@@ -90,6 +102,19 @@ void lua_msg_descr_to_table(lua_State *L, const struct lua_msg_field_descr *fiel
 	}
 }
 
+/**
+ * @brief Decode a Lua table into C struct fields.
+ *
+ * For each descriptor in @p fields, reads the named key from the Lua table
+ * at @p table_idx and writes the converted value into @p base + offset.
+ * Missing keys (nil) are silently skipped.
+ *
+ * @param L            Lua state.
+ * @param fields       Array of field descriptors.
+ * @param field_count  Number of fields.
+ * @param base         Base pointer to the C struct to populate.
+ * @param table_idx    Absolute Lua stack index of the source table.
+ */
 void lua_msg_descr_from_table(lua_State *L, const struct lua_msg_field_descr *fields,
 			      size_t field_count, void *base, int table_idx)
 {

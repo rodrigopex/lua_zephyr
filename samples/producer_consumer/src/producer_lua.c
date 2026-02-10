@@ -1,3 +1,12 @@
+/**
+ * @file producer_lua.c
+ * @brief Producer-consumer sample: Lua-side producer setup and zbus declarations.
+ *
+ * Provides the _lua_setup hook for the producer Lua thread.  Loads the
+ * zephyr and zbus libraries and exposes the sample channels and observers
+ * to Lua.
+ */
+
 #include <lauxlib.h>
 #include <lualib.h>
 #include <sys/times.h>
@@ -11,6 +20,7 @@ ZBUS_MSG_SUBSCRIBER_DEFINE(msub_acc_consumed);
 
 ZBUS_CHAN_ADD_OBS(chan_acc_data_consumed, msub_acc_consumed, 3);
 
+/** @brief Setup hook for the producer Lua thread (loads libs, declares channels). */
 int producer_lua_setup(lua_State *L)
 {
 	LUA_REQUIRE(zephyr);

@@ -1,3 +1,12 @@
+/**
+ * @file lua_repl.c
+ * @brief Interactive Lua REPL integrated with the Zephyr shell.
+ *
+ * Registers a `lua` shell command that launches a read-eval-print loop.
+ * The REPL runs in its own sys_heap and supports Ctrl+D (exit) and
+ * Ctrl+L (clear screen).  Enabled via CONFIG_LUA_REPL.
+ */
+
 #ifdef CONFIG_LUA_REPL
 
 #include <lua.h>
@@ -8,10 +17,14 @@
 #include <zephyr/shell/shell.h>
 #include <zephyr/sys/printk.h>
 
-#define EOT 0x04 /* Ctrl+D */
-#define BS  0x08 /* Backspace */
-#define DEL 0x7F /* Delete */
-#define FF  0x0C /* Ctrl+L */
+/** @brief End-of-transmission (Ctrl+D) — exits the REPL. */
+#define EOT 0x04
+/** @brief Backspace character. */
+#define BS  0x08
+/** @brief Delete character (treated the same as backspace). */
+#define DEL 0x7F
+/** @brief Form-feed (Ctrl+L) — clears the screen. */
+#define FF  0x0C
 
 static struct {
 	struct {
@@ -21,6 +34,17 @@ static struct {
 	char input_line[CONFIG_LUA_REPL_LINE_SIZE];
 } self = {};
 
+/**
+ * @brief Read one line of input from the shell transport.
+ *
+ * Blocks until a newline, EOF (Ctrl+D), or buffer-full.  Handles
+ * backspace/delete and Ctrl+L (clear screen) inline.
+ *
+ * @param sh             Shell instance.
+ * @param buf            Destination buffer.
+ * @param len            Buffer capacity (including NUL).
+ * @param received_exit  Set to true if the user pressed Ctrl+D.
+ */
 static void shell_getline(const struct shell *sh, char *buf, const size_t len, bool *received_exit)
 {
 	__ASSERT_NO_MSG(sh != NULL);
@@ -69,6 +93,7 @@ static void shell_getline(const struct shell *sh, char *buf, const size_t len, b
 	}
 }
 
+/** @brief Print all values on the Lua stack using the global `print` function. */
 static void lua_repl_print(lua_State *L)
 {
 	int n = lua_gettop(L);
@@ -85,6 +110,13 @@ static void lua_repl_print(lua_State *L)
 	}
 }
 
+/**
+ * @brief Shell command handler that runs the Lua REPL loop.
+ *
+ * Creates a Lua state backed by a dedicated sys_heap, loads the `zephyr`
+ * and `base` libraries, then enters the read-eval-print loop until the
+ * user presses Ctrl+D.
+ */
 static int lua_repl_cmd(const struct shell *sh, size_t argc, char **argv, void *data)
 {
 	ARG_UNUSED(argc);

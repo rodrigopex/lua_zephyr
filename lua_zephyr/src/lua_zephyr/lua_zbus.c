@@ -1,3 +1,12 @@
+/**
+ * @file lua_zbus.c
+ * @brief Lua bindings for Zephyr zbus: publish, read, wait, and serialization.
+ *
+ * Implements channel and observer userdata types with metatables so Lua scripts
+ * can call :pub(), :read(), and :wait_msg().  Weak conversion hooks delegate to
+ * the descriptor system in lua_msg_descr when channel user_data is set.
+ */
+
 #include <lauxlib.h>
 #include <lualib.h>
 #include <sys/times.h>
@@ -7,12 +16,15 @@
 #include <lua_zephyr/lua_msg_descr.h>
 #include <zephyr/kernel.h>
 
-/* Metatable name for our userdata */
+/** @brief Metatable name for zbus channel userdata. */
 #define ZBUS_CHAN_METATABLE "zbus.channel.mt"
+/** @brief Metatable name for zbus observer userdata. */
 #define ZBUS_OBS_METATABLE  "zbus.observer.mt"
 
+/** @brief Maximum message buffer size for sub_wait_msg. */
 #define ZBUS_MSG_CAPACITY 512
 
+/** @brief Validate and return the zbus channel userdata at stack index @p idx. */
 static const struct zbus_channel **check_zbus_channel(lua_State *L, int idx)
 {
 	void *ud = luaL_checkudata(L, idx, ZBUS_CHAN_METATABLE);
@@ -20,6 +32,17 @@ static const struct zbus_channel **check_zbus_channel(lua_State *L, int idx)
 	return ud;
 }
 
+/**
+ * @brief Convert a C message struct to a Lua table (weak default).
+ *
+ * Uses the descriptor stored in zbus_chan_user_data if available.
+ * Applications may provide a strong override for custom serialization.
+ *
+ * @param L        Lua state.
+ * @param chan     The zbus channel the message belongs to.
+ * @param message  Pointer to the raw message buffer.
+ * @return 1 (table or nil pushed onto the Lua stack).
+ */
 int __weak msg_struct_to_lua_table(lua_State *L, const struct zbus_channel *chan, void *message)
 {
 	const struct lua_msg_descr *descr = zbus_chan_user_data(chan);
@@ -32,6 +55,17 @@ int __weak msg_struct_to_lua_table(lua_State *L, const struct zbus_channel *chan
 	return 1;
 }
 
+/**
+ * @brief Convert a Lua table to a C message struct (weak default).
+ *
+ * Uses the descriptor stored in zbus_chan_user_data if available.
+ * Applications may provide a strong override for custom deserialization.
+ *
+ * @param L        Lua state.
+ * @param chan     The zbus channel the message belongs to.
+ * @param message  Pointer to the output message buffer.
+ * @return Message size on success, 0 if no descriptor is available.
+ */
 size_t __weak lua_table_to_msg_struct(lua_State *L, const struct zbus_channel *chan, void *message)
 {
 	const struct lua_msg_descr *descr = zbus_chan_user_data(chan);
@@ -43,6 +77,7 @@ size_t __weak lua_table_to_msg_struct(lua_State *L, const struct zbus_channel *c
 	return 0;
 }
 
+/** @brief Lua method: channel:pub(table, timeout_ms) -> err. */
 static int chan_pub(lua_State *L)
 {
 	int err = -EINVAL;
@@ -78,6 +113,7 @@ static int chan_pub(lua_State *L)
 	return 1;
 }
 
+/** @brief Lua method: channel:read(timeout_ms) -> err, table. */
 static int chan_read(lua_State *L)
 {
 	int err = -EINVAL;
@@ -108,6 +144,7 @@ static int chan_read(lua_State *L)
 
 	return 2;
 }
+/** @brief Lua metamethod __eq: compare two channel userdata by pointer. */
 static int chan_equals(lua_State *L)
 {
 	const struct zbus_channel **chan1 = check_zbus_channel(L, 1);
@@ -124,6 +161,7 @@ static int chan_equals(lua_State *L)
 	return 1;
 }
 
+/** @brief Lua metamethod __tostring: return a human-readable channel string. */
 static int chan_tostring(lua_State *L)
 {
 	const struct zbus_channel **chan = check_zbus_channel(L, 1);
@@ -142,6 +180,7 @@ static const struct luaL_Reg zbus_chan_metamethods[] = {{"pub", chan_pub},
 							{"__eq", chan_equals},
 							{NULL, NULL}};
 
+/** @brief Validate and return the zbus observer userdata at stack index @p idx. */
 static const struct zbus_observer **check_zbus_observer(lua_State *L, int idx)
 {
 	void *ud = luaL_checkudata(L, idx, ZBUS_OBS_METATABLE);
@@ -149,6 +188,7 @@ static const struct zbus_observer **check_zbus_observer(lua_State *L, int idx)
 	return ud;
 }
 
+/** @brief Lua method: observer:wait_msg(timeout_ms) -> err, channel, table. */
 static int sub_wait_msg(lua_State *L)
 {
 	const struct zbus_channel *chan;
@@ -191,6 +231,7 @@ static const struct luaL_Reg zbus_obs_metamethods[] = {{"wait_msg", sub_wait_msg
 
 static const luaL_Reg zbus[] = {{NULL, NULL}};
 
+/** @brief Register a zbus channel as a field in the global `zbus` Lua table. */
 int lua_zbus_chan_declare(lua_State *L, const struct zbus_channel *chan, const char *chan_name)
 {
 	lua_getglobal(L, "zbus");
@@ -209,6 +250,7 @@ int lua_zbus_chan_declare(lua_State *L, const struct zbus_channel *chan, const c
 	return 1;
 }
 
+/** @brief Register a zbus observer as a field in the global `zbus` Lua table. */
 int lua_zbus_obs_declare(lua_State *L, const struct zbus_observer *obs, const char *obs_name)
 {
 	lua_getglobal(L, "zbus");
@@ -227,6 +269,7 @@ int lua_zbus_obs_declare(lua_State *L, const struct zbus_observer *obs, const ch
 	return 1;
 }
 
+/** @brief Open the `zbus` Lua library. Creates channel and observer metatables. */
 int luaopen_zbus(lua_State *L)
 {
 	luaL_newmetatable(L, ZBUS_CHAN_METATABLE);

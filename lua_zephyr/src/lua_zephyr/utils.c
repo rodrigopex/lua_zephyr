@@ -1,3 +1,11 @@
+/**
+ * @file utils.c
+ * @brief Lua-Zephyr core: allocator, kernel API wrappers, and POSIX stubs.
+ *
+ * Implements the sys_heap-backed Lua allocator and the `zephyr` Lua library
+ * which exposes msleep, printk, and LOG_* to Lua scripts.
+ */
+
 #include "lua.h"
 #include "lua_zephyr/utils.h"
 
@@ -39,6 +47,7 @@ void *lua_zephyr_allocator(void *ud, void *ptr, size_t osize, size_t nsize)
 	return res;
 }
 
+/** @brief Lua binding for k_msleep. Expects one integer argument (ms). */
 static int k_msleep_wrapper(lua_State *L)
 {
 	int n = lua_gettop(L);
@@ -53,6 +62,7 @@ static int k_msleep_wrapper(lua_State *L)
 	return 0;
 }
 
+/** @brief Lua binding for printk. Expects one string argument. */
 static int printk_wrapper(lua_State *L)
 {
 	int n = lua_gettop(L);
@@ -67,6 +77,7 @@ static int printk_wrapper(lua_State *L)
 	return 0;
 }
 
+/** @brief Lua binding for LOG_INF. Expects one string argument. */
 static int log_inf_wrapper(lua_State *L)
 {
 	int n = lua_gettop(L);
@@ -81,6 +92,7 @@ static int log_inf_wrapper(lua_State *L)
 	return 0;
 }
 
+/** @brief Lua binding for LOG_WRN. Expects one string argument. */
 static int log_wrn_wrapper(lua_State *L)
 {
 	int n = lua_gettop(L);
@@ -95,6 +107,7 @@ static int log_wrn_wrapper(lua_State *L)
 	return 0;
 }
 
+/** @brief Lua binding for LOG_DBG. Expects one string argument. */
 static int log_dbg_wrapper(lua_State *L)
 {
 	int n = lua_gettop(L);
@@ -109,6 +122,7 @@ static int log_dbg_wrapper(lua_State *L)
 	return 0;
 }
 
+/** @brief Lua binding for LOG_ERR. Expects one string argument. */
 static int log_err_wrapper(lua_State *L)
 {
 	int n = lua_gettop(L);
@@ -133,26 +147,27 @@ static const luaL_Reg zephyr_wrappers[] = {
 	{NULL, NULL} // Sentinel value to mark the end of the array
 };
 
+/** @brief Open the `zephyr` Lua library. Registers all kernel wrappers. */
 int luaopen_zephyr(lua_State *L)
 {
 	luaL_newlib(L, zephyr_wrappers);
 	return 1;
 }
 
-/* Stub function just to make the compiler happy */
+/** @brief POSIX stub — _times is unused but required by the toolchain. */
 clock_t _times(struct tms *tms)
 {
 	errno = ENOSYS;
 	return (clock_t)-1;
 }
 
-/* Stub function just to make the compiler happy */
+/** @brief POSIX stub — _unlink is unused but required by the toolchain. */
 int _unlink(const char *pathname)
 {
-	return -1; // fs_unlink(pathname);
+	return -1;
 }
 
-/* Stub function just to make the compiler happy */
+/** @brief POSIX stub — _link is unused but required by the toolchain. */
 int _link(const char *oldpath, const char *newpath)
 {
 	errno = ENOSYS;
