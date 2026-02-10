@@ -15,14 +15,15 @@
 #include <lua_zephyr/zbus.h>
 #include <lua_zephyr/lua_msg_descr.h>
 #include <zephyr/kernel.h>
+#include <zephyr/init.h>
 
 /** @brief Metatable name for zbus channel userdata. */
 #define ZBUS_CHAN_METATABLE "zbus.channel.mt"
 /** @brief Metatable name for zbus observer userdata. */
 #define ZBUS_OBS_METATABLE  "zbus.observer.mt"
 
-/** @brief Maximum message buffer size for sub_wait_msg. */
-#define ZBUS_MSG_CAPACITY 512
+/** @brief Largest message size across all registered zbus channels (computed at boot). */
+static size_t max_chan_msg_size;
 
 /**
  * @brief Allocate raw memory from the Lua state's heap allocator.
@@ -53,6 +54,24 @@ static void lua_free_raw(lua_State *L, void *ptr, size_t size)
 
 	allocf(ud, ptr, size, 0);
 }
+
+static bool find_max_msg_size(const struct zbus_channel *chan)
+{
+	size_t msg_size = zbus_chan_msg_size(chan);
+
+	if (msg_size > max_chan_msg_size) {
+		max_chan_msg_size = msg_size;
+	}
+	return true;
+}
+
+static int lua_zbus_init(void)
+{
+	zbus_iterate_over_channels(find_max_msg_size);
+	return 0;
+}
+
+SYS_INIT(lua_zbus_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
 
 /** @brief Validate and return the zbus channel userdata at stack index @p idx. */
 static const struct zbus_channel **check_zbus_channel(lua_State *L, int idx)
@@ -228,7 +247,7 @@ static int sub_wait_msg(lua_State *L)
 	const struct zbus_observer **obs = check_zbus_observer(L, 1);
 	int timeout_ms = luaL_checkinteger(L, 2);
 
-	void *msg = lua_alloc_raw(L, ZBUS_MSG_CAPACITY);
+	void *msg = lua_alloc_raw(L, max_chan_msg_size);
 
 	if (msg == NULL) {
 		lua_pushinteger(L, -ENOMEM);
@@ -254,7 +273,7 @@ static int sub_wait_msg(lua_State *L)
 		msg_struct_to_lua_table(L, chan, msg);
 	}
 
-	lua_free_raw(L, msg, ZBUS_MSG_CAPACITY);
+	lua_free_raw(L, msg, max_chan_msg_size);
 
 	return 3;
 }
