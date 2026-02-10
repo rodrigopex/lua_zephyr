@@ -1,3 +1,8 @@
+/**
+ * @file main.c
+ * @brief Hello-world sample: runs a Lua script from both main and a Lua thread.
+ */
+
 #include <zephyr/kernel.h>
 
 #include <lauxlib.h>
@@ -7,6 +12,7 @@
 
 #include "sample01_lua_script.h"
 
+/** @brief Setup hook for the hello_world Lua thread (loads the zephyr lib). */
 int hello_world_lua_setup(lua_State *L)
 {
 	printk("Pre-lua vm setup for hello world lua by the user\n");
@@ -15,6 +21,7 @@ int hello_world_lua_setup(lua_State *L)
 	return 0;
 }
 
+/** @brief Run the sample01 Lua script using the default Lua allocator. */
 int main(int argc, char *argv[])
 {
 	lua_State *L = luaL_newstate();

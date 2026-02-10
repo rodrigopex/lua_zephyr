@@ -1,3 +1,12 @@
+/**
+ * @file channels.c
+ * @brief Producer-consumer sample: zbus channel definitions with nanopb descriptors.
+ *
+ * Defines all zbus channels used by the sample.  Each channel's user_data
+ * is populated with an auto-generated lua_msg_descr via LUA_PB_DESCR_DEFINE,
+ * enabling automatic Lua table <-> C struct conversion.
+ */
+
 #include "channels.h"
 #include <lua_zephyr/lua_msg_descr_pb.h>
 

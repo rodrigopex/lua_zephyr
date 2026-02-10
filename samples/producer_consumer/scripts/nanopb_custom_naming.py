@@ -1,7 +1,15 @@
+"""Custom nanopb naming style that produces snake_case C identifiers.
+
+Loaded by nanopb's generator via the ``--naming-style`` option.  Converts
+PascalCase / camelCase protobuf names into the snake_case convention used
+by the lua_zephyr integration layer.
+"""
+
 import re
 
 
 class NamingStyleLuaC:
+    """nanopb naming style plugin: PascalCase -> snake_case for all C symbols."""
     def enum_name(self, name):
         return self.underscore(name)
 

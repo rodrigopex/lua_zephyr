@@ -1,6 +1,8 @@
-"""
-Script to compile Lua script files into C const strings.
-FOR TESTING PURPOSES ONLY.
+"""Compile a Lua script file into a standalone C header with a const string.
+
+FOR TESTING PURPOSES ONLY.  Reads a .lua file, escapes its contents, and
+writes a .h file containing the script as a const char[] wrapped in an
+include guard.  Superseded by lua_cat.py + lua_template.h.in for production.
 """
 
 import os

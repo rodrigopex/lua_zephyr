@@ -1,3 +1,13 @@
+/**
+ * @file lua_thread.c.in
+ * @brief CMake configure_file template for generating Lua thread source files.
+ *
+ * Placeholders @FILE_NAME@ and @LUA_CONTENT@ are substituted by CMake's
+ * configure_file when add_lua_thread() is called from lua.cmake.
+ * The generated file creates a Zephyr thread with its own sys_heap,
+ * Lua state, and an embedded Lua script.
+ */
+
 /* clang-format off */
 
 #include <lua.h>
@@ -10,6 +20,15 @@ static char heap_mem[CONFIG_LUA_THREAD_HEAP_SIZE];
 static struct sys_heap lua_heap;
 static const char @FILE_NAME@_lua_script[] = "@LUA_CONTENT@";
 
+/**
+ * @brief Weak setup hook called before the Lua script executes.
+ *
+ * Override this function to load libraries, declare zbus channels/observers,
+ * or perform any per-thread Lua state initialization.
+ *
+ * @param L  Lua state for this thread.
+ * @return 0 on success, non-zero to abort script execution.
+ */
 int __weak @FILE_NAME@_lua_setup(lua_State *L)
 {
     ARG_UNUSED(L);
@@ -17,6 +36,7 @@ int __weak @FILE_NAME@_lua_setup(lua_State *L)
 	return 0;
 }
 
+/** @brief Print heap usage statistics (allocated, free, max allocated). */
 static void print_sys_memory_stats(struct sys_heap *hp)
 {
 	struct sys_memory_stats stats;
@@ -27,6 +47,7 @@ static void print_sys_memory_stats(struct sys_heap *hp)
 	       stats.free_bytes, stats.max_allocated_bytes, CONFIG_LUA_THREAD_HEAP_SIZE);
 }
 
+/** @brief Thread entry point: init heap, create Lua state, and run the script. */
 static void @FILE_NAME@_lua_thread(void*p1, void*p2, void*p3)
 {
     ARG_UNUSED(p1);

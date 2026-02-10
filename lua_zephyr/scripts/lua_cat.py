@@ -1,3 +1,10 @@
+"""Convert a Lua script file to a C-escaped string for embedding.
+
+Reads a .lua file and prints its contents as a backslash-continued C
+string literal to stdout.  Used by lua.cmake's add_lua_file() and
+add_lua_thread() via CMake's execute_process.
+"""
+
 import argparse
 
 argparser = argparse.ArgumentParser(

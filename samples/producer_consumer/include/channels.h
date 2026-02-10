@@ -1,3 +1,8 @@
+/**
+ * @file channels.h
+ * @brief Producer-consumer sample: zbus channel declarations and protobuf types.
+ */
+
 #ifndef CHANNELS_H
 #define CHANNELS_H
 

@@ -1,3 +1,12 @@
+/**
+ * @file lua_template.h.in
+ * @brief CMake configure_file template for embedding a Lua script as a C string.
+ *
+ * Placeholders @FILE_NAME@ and @LUA_CONTENT@ are substituted by CMake's
+ * configure_file when add_lua_file() is called from lua.cmake.
+ * The generated header provides a const char[] containing the Lua source.
+ */
+
 /* clang-format off */
 #ifndef LUA_@FILE_NAME@
 #define LUA_@FILE_NAME@

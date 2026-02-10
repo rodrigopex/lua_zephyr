@@ -1,9 +1,19 @@
+/**
+ * @file consumer.c
+ * @brief Producer-consumer sample: native C consumer thread.
+ *
+ * Subscribes to chan_acc_data via zbus message subscriber, prints
+ * received accelerometer data, and publishes an acknowledgement
+ * on chan_acc_data_consumed.
+ */
+
 #include "channels.h"
 
 ZBUS_MSG_SUBSCRIBER_DEFINE(msub_consumer);
 
 ZBUS_CHAN_ADD_OBS(chan_acc_data, msub_consumer, 3);
 
+/** @brief Consumer thread: waits for accelerometer data and publishes an ack. */
 void consumer_thread(void *p1, void *p2, void *p3)
 {
 	ARG_UNUSED(p1);
