@@ -1,0 +1,23 @@
+sample:
+  name: LittleFS Lua Sample
+tests:
+  sample.lua_zephyr.littlefs:
+    harness: console
+    extra_configs:
+      - CONFIG_QEMU_ICOUNT=y
+      - CONFIG_SHELL=n
+      - CONFIG_LUA_FS_SHELL=n
+      - CONFIG_LOG_MODE_MINIMAL=y
+    harness_config:
+      type: multi_line
+      ordered: true
+      regex:
+        - "Bootstrap: writing scripts to LittleFS"
+        - "Bootstrap: done"
+        - "Hello from LittleFS!"
+        - "Greetings from greet.lua!"
+        - "dofile returned successfully"
+        - "allocated 0, free \\d+, max allocated \\d+, heap size 32768"
+    tags: lua_zephyr
+    integration_platforms:
+      - qemu_x86

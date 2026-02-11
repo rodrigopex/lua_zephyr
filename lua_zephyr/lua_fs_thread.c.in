@@ -1,0 +1,88 @@
+/**
+ * @file lua_fs_thread.c.in
+ * @brief CMake configure_file template for generating FS-backed Lua thread source files.
+ *
+ * Placeholders @FILE_NAME@ and @LUA_FS_PATH@ are substituted by CMake's
+ * configure_file when add_lua_fs_thread() is called from lua.cmake.
+ * The generated file creates a Zephyr thread with its own sys_heap,
+ * Lua state, and loads a Lua script from the filesystem at runtime.
+ */
+
+/* clang-format off */
+
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+#include <lua_zephyr/utils.h>
+#include <lua_zephyr/lua_fs.h>
+#include <zephyr/kernel.h>
+
+static char heap_mem[CONFIG_LUA_THREAD_HEAP_SIZE];
+static struct sys_heap lua_heap;
+static const char @FILE_NAME@_script_path[] = "@LUA_FS_PATH@";
+
+/**
+ * @brief Weak setup hook called before the Lua script executes.
+ *
+ * Override this function to load libraries, declare zbus channels/observers,
+ * or perform any per-thread Lua state initialization.
+ *
+ * @param L  Lua state for this thread.
+ * @return 0 on success, non-zero to abort script execution.
+ */
+int __weak @FILE_NAME@_lua_setup(lua_State *L)
+{
+    ARG_UNUSED(L);
+
+	return 0;
+}
+
+/** @brief Print heap usage statistics (allocated, free, max allocated). */
+static void print_sys_memory_stats(struct sys_heap *hp)
+{
+	struct sys_memory_stats stats;
+
+	sys_heap_runtime_stats_get(hp, &stats);
+
+	printk("allocated %zu, free %zu, max allocated %zu, heap size %u\n", stats.allocated_bytes,
+	       stats.free_bytes, stats.max_allocated_bytes, CONFIG_LUA_THREAD_HEAP_SIZE);
+}
+
+/** @brief Thread entry point: init heap, create Lua state, and run script from FS. */
+static void @FILE_NAME@_lua_thread(void*p1, void*p2, void*p3)
+{
+    ARG_UNUSED(p1);
+    ARG_UNUSED(p2);
+    ARG_UNUSED(p3);
+
+	sys_heap_init(&lua_heap, heap_mem, CONFIG_LUA_THREAD_HEAP_SIZE);
+
+	lua_State *L = lua_newstate(lua_zephyr_allocator, &lua_heap);
+
+    int err = @FILE_NAME@_lua_setup(L);
+    if(err) {
+        lua_close(L);
+        __ASSERT(false, "Setup required to be successful");
+        return;
+    }
+
+	err = lua_fs_dofile(L, @FILE_NAME@_script_path);
+	if (err != 0) {
+		if (lua_isstring(L, -1)) {
+			printk("Lua error: %s\n", lua_tostring(L, -1));
+		} else {
+			printk("Lua FS error: %d\n", err);
+		}
+		lua_settop(L, 0);
+	}
+
+	lua_close(L);
+
+	print_sys_memory_stats(&lua_heap);
+
+    k_sleep(K_FOREVER);
+}
+
+K_THREAD_DEFINE(@FILE_NAME@_lua_thread_id, CONFIG_LUA_THREAD_STACK_SIZE, @FILE_NAME@_lua_thread, NULL, NULL, NULL, CONFIG_LUA_THREAD_PRIORITY, 0, 0);
+
+/* clang-format on */

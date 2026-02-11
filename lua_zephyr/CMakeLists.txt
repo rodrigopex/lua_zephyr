@@ -32,9 +32,9 @@ if(CONFIG_LUA)
                            "${SRC_DIR}/lua_zephyr/lua_repl.c"
     )
 
-    if(CONFIG_LUA_PRECOMPILE_ONLY)
-        zephyr_library_sources("${SRC_DIR}/lua_zephyr/lua_parser_stubs.c")
-    endif()
+    zephyr_library_sources_ifdef(CONFIG_LUA_PRECOMPILE_ONLY "${SRC_DIR}/lua_zephyr/lua_parser_stubs.c")
+    zephyr_library_sources_ifdef(CONFIG_LUA_FS "${SRC_DIR}/lua_zephyr/lua_fs.c")
+    zephyr_library_sources_ifdef(CONFIG_LUA_FS_SHELL "${SRC_DIR}/lua_zephyr/lua_fs_shell.c")
 
     # Add the helper functions to be used inside the user CMakeLists.txt. For
     # now, only `add_lua_file` exists.

@@ -168,3 +168,49 @@ function(add_lua_bytecode_thread FILE_NAME_PATH)
         "${CMAKE_CURRENT_BINARY_DIR}/lua/${FILE_NAME}_lua_bytecode_thread.c"
     )
 endfunction()
+
+
+# add_lua_fs_thread(SCRIPT_FS_PATH)
+#
+# Generate a Lua thread that loads its script from the filesystem at runtime.
+#
+# Configures lua_fs_thread.c.in with the given FS path, producing a Zephyr
+# thread that calls lua_fs_dofile() instead of embedding the script.
+# The generated .c file is automatically added to the `app` target.
+#
+# Requires CONFIG_LUA_FS=y.
+#
+# Arguments:
+#   SCRIPT_FS_PATH - Filesystem path the thread will load at runtime
+#                    (e.g. "/lfs/hello_fs.lua" or just "hello_fs.lua").
+function(add_lua_fs_thread SCRIPT_FS_PATH)
+    # Derive a C-safe identifier from the path
+    string(REGEX REPLACE "[^a-zA-Z0-9_]" "_" FILE_NAME "${SCRIPT_FS_PATH}")
+    string(REGEX REPLACE "^_+" "" FILE_NAME "${FILE_NAME}")
+
+    set(LUA_FS_PATH "${SCRIPT_FS_PATH}")
+
+    configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/lua_fs_thread.c.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/lua/${FILE_NAME}_lua_fs_thread.c")
+
+    include_directories("${CMAKE_BINARY_DIR}/lua")
+
+    target_sources(app PRIVATE
+        "${CMAKE_CURRENT_BINARY_DIR}/lua/${FILE_NAME}_lua_fs_thread.c"
+    )
+endfunction()
+
+
+# add_lua_fs_file(SOURCE_PATH [FS_NAME])
+#
+# Register a Lua source file for embedding and later writing to the FS.
+#
+# Embeds the file as a C string header (via add_lua_file) so that the
+# application can write it to the filesystem at boot using lua_fs_write_file().
+#
+# Arguments:
+#   SOURCE_PATH - Path to the .lua file (relative to project source dir).
+#   FS_NAME     - Optional: basename on the filesystem (defaults to source basename).
+function(add_lua_fs_file SOURCE_PATH)
+    add_lua_file("${SOURCE_PATH}")
+endfunction()
