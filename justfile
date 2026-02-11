@@ -66,7 +66,8 @@ attach:
 
 # Run test suite via twister
 test:
-    west twister -p mps2/an385 -T samples -O /tmp/lua_tests/
+    rm -rf /tmp/lua_tests
+    west twister -p mps2/an385 -T samples -O /tmp/lua_tests
 
 # ── Code Quality ─────────────────────────────────────────────────────────────────
 
