@@ -40,7 +40,7 @@ config LUA_THREAD_HEAP_SIZE
   help
     The heap size for Lua threads automatically created by Lua Zephyr.
     This is the size of the memory pool used by Lua for its internal
-    memory management. 
+    memory management.
 
 config LUA_THREAD_PRIORITY
   int "Lua thread priority"
@@ -110,4 +110,3 @@ endchoice
 
 config COMMON_LIBC_REMOVE
     default n if LUA
-

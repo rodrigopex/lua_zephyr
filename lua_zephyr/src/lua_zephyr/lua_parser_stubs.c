@@ -22,8 +22,8 @@ void luaX_init(lua_State *L)
 
 /* luaY_parser is called when luaL_loadstring/luaL_loadfile is used.
  * In bytecode-only mode, source parsing is not supported. */
-LClosure *luaY_parser(lua_State *L, ZIO *z, Mbuffer *buff, Dyndata *dyd,
-		      const char *name, int firstchar)
+LClosure *luaY_parser(lua_State *L, ZIO *z, Mbuffer *buff, Dyndata *dyd, const char *name,
+		      int firstchar)
 {
 	UNUSED(z);
 	UNUSED(buff);

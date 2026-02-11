@@ -35,8 +35,8 @@ static int mount_fs(void)
 
 	if (rc < 0) {
 		LOG_WRN("fs_mount failed: %d, formatting...", rc);
-		rc = fs_mkfs(FS_LITTLEFS, (uintptr_t)FIXED_PARTITION_ID(storage_partition),
-			     NULL, 0);
+		rc = fs_mkfs(FS_LITTLEFS, (uintptr_t)FIXED_PARTITION_ID(storage_partition), NULL,
+			     0);
 		if (rc < 0) {
 			LOG_ERR("fs_mkfs failed: %d", rc);
 			return rc;
