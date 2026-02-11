@@ -17,7 +17,7 @@ zephyr_nanopb_sources(app proto/channels.proto)
 
 include_directories(include/)
 
-add_lua_thread("src/producer.lua")
+add_lua_bytecode_thread("src/producer.lua")
 
 file(GLOB_RECURSE SRC ${CMAKE_SOURCE_DIR} "src/*.c")
 
