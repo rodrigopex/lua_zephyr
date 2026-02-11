@@ -64,6 +64,39 @@ config LUA_PRECOMPILE_ONLY
       Removes lparser.c, llex.c, and lcode.c from the target binary.
       Saves ~15-20KB flash. All scripts must be pre-compiled.
 
+config LUA_FS
+    bool "Lua filesystem support"
+    depends on LUA
+    depends on FILE_SYSTEM
+    help
+      Enable filesystem support for Lua scripts. Provides fs.dofile,
+      fs.loadfile, and fs.list to Lua scripts, and replaces the standard
+      dofile/loadfile globals with FS-backed versions.
+      The application is responsible for mounting the filesystem before
+      Lua threads start.
+
+config LUA_FS_MOUNT_POINT
+    string "Lua FS mount point"
+    depends on LUA_FS
+    default "/lfs"
+    help
+      Mount point prefix used by the Lua fs library for relative paths.
+
+config LUA_FS_MAX_FILE_SIZE
+    int "Maximum Lua script file size (bytes)"
+    depends on LUA_FS
+    default 4096
+    help
+      Maximum size of a Lua script file that can be loaded from the filesystem.
+
+config LUA_FS_SHELL
+    bool "Lua filesystem shell commands"
+    depends on LUA_FS
+    depends on SHELL
+    help
+      Enable shell commands for managing Lua scripts on the filesystem:
+      lua_fs list, cat, write, delete, run, stat.
+
 module = LUA_ZEPHYR
 module-str = lua_zephyr
 source "subsys/logging/Kconfig.template.log_config"
