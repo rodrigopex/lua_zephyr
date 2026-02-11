@@ -2,6 +2,8 @@ menu "Lua Zephyr"
 
 config LUA
     bool "Lua support"
+    select ZBUS
+    select ZBUS_MSG_SUBSCRIBER
     help
       Enable Lua support. This is required for the Lua scripting engine.
       If you enable this option, you will be able to use Lua scripts and
@@ -92,7 +94,7 @@ config LUA_FS_MAX_FILE_SIZE
 config LUA_FS_SHELL
     bool "Lua filesystem shell commands"
     depends on LUA_FS
-    depends on SHELL
+    select SHELL
     help
       Enable shell commands for managing Lua scripts on the filesystem:
       lua_fs list, cat, write, delete, run, stat.
@@ -101,3 +103,11 @@ module = LUA_ZEPHYR
 module-str = lua_zephyr
 source "subsys/logging/Kconfig.template.log_config"
 endmenu
+
+choice LIBC_IMPLEMENTATION
+    default NEWLIB_LIBC if LUA
+endchoice
+
+config COMMON_LIBC_REMOVE
+    default n if LUA
+
