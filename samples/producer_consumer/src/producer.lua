@@ -1,12 +1,18 @@
+--- Producer script: demonstrates zbus pub/sub with nested messages and
+--- accelerometer data generation from a Lua thread.
+
 if require then
     require("zephyr")
 end
 
+--- Read and display the system version from the version channel.
 local err, msg = zbus.chan_version:read(500)
 if msg then
     zephyr.printk("System version: v" .. msg.major .. "." .. msg.minor .. "." .. msg.patch .. "_" .. msg.hardware_id)
 end
 
+--- Publish a sensor configuration with a nested offset struct, then read it
+--- back to verify the round-trip through the descriptor-based serialization.
 local sensor_cfg = { sensor_id = 42, offset = { x = 1, y = 2, z = 3 } }
 err = zbus.chan_sensor_config:pub(sensor_cfg, 200)
 if err == 0 then
@@ -19,6 +25,9 @@ if err == 0 then
     end
 end
 
+--- Linear congruential pseudo-random number generator.
+--- @param seed number  Input seed value.
+--- @return number      Pseudo-random value in [0, 7601].
 local getrandom = function(seed)
     local A1 = 71047
     local B1 = 8810
@@ -26,10 +35,14 @@ local getrandom = function(seed)
     return (A1 * seed + B1) % M1
 end
 
+--- Accelerometer data template (mass and xyz components).
 local acc_data = { m = 10, x = 0, y = 0, z = 0 }
 
 local i = 1
 
+--- Main producer loop: generate random accelerometer samples, publish them on
+--- chan_acc_data, and wait for a consumer acknowledgement on msub_acc_consumed.
+--- The consumer's ack carries a count that drives the loop index forward.
 while i < 10 do
     acc_data.x = getrandom(i * 0x6782) % 100
     acc_data.y = getrandom(i * 0x82716) % 100
@@ -42,6 +55,7 @@ while i < 10 do
         zephyr.printk("Could not pub to channel")
     end
 
+    --- Wait for the consumer to process the data and send back an ack message.
     err, _, msg = zbus.msub_acc_consumed:wait_msg(250)
 
     if err ~= 0 then
