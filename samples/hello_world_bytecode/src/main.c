@@ -29,8 +29,8 @@ int main(int argc, char *argv[])
 
 	LUA_REQUIRE(zephyr);
 
-	if (luaL_loadbuffer(L, (const char *)sample01_lua_bytecode,
-	                    sample01_lua_bytecode_len, "sample01") != LUA_OK ||
+	if (luaL_loadbuffer(L, (const char *)sample01_lua_bytecode, sample01_lua_bytecode_len,
+			    "sample01") != LUA_OK ||
 	    lua_pcall(L, 0, LUA_MULTRET, 0) != LUA_OK) {
 		printk("Error: %s\n", lua_tostring(L, -1));
 		lua_pop(L, 1);
