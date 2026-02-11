@@ -10,6 +10,7 @@ import re
 
 class NamingStyleLuaC:
     """nanopb naming style plugin: PascalCase -> snake_case for all C symbols."""
+
     def enum_name(self, name):
         return self.underscore(name)
 
