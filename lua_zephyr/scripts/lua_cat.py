@@ -20,7 +20,7 @@ with open(args.file, "r") as f:
         line = line.replace('"', '\\"')
         line = line.replace("\r", "")
 
-        strings.append(line)
+        strings.append(line + "\\n")
 
 strings = " \\\n".join(strings)
 
