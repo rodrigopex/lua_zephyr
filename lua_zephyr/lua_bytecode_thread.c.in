@@ -39,6 +39,7 @@ int __weak @FILE_NAME@_lua_setup(lua_State *L)
 	return 0;
 }
 
+#ifdef CONFIG_SYS_HEAP_RUNTIME_STATS
 /** @brief Print heap usage statistics (allocated, free, max allocated). */
 static void print_sys_memory_stats(struct sys_heap *hp)
 {
@@ -49,6 +50,7 @@ static void print_sys_memory_stats(struct sys_heap *hp)
 	printk("allocated %zu, free %zu, max allocated %zu, heap size %u\n", stats.allocated_bytes,
 	       stats.free_bytes, stats.max_allocated_bytes, CONFIG_LUA_THREAD_HEAP_SIZE);
 }
+#endif
 
 /** @brief Thread entry point: init heap, create Lua state, and run bytecode. */
 static void @FILE_NAME@_lua_thread(void*p1, void*p2, void*p3)
@@ -77,7 +79,9 @@ static void @FILE_NAME@_lua_thread(void*p1, void*p2, void*p3)
 
 	lua_close(L);
 
+#ifdef CONFIG_SYS_HEAP_RUNTIME_STATS
 	print_sys_memory_stats(&lua_heap);
+#endif
 
     k_sleep(K_FOREVER);
 }
