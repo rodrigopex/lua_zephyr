@@ -1,0 +1,87 @@
+/**
+ * @file lua_bytecode_thread.c.in
+ * @brief CMake configure_file template for generating Lua bytecode thread source files.
+ *
+ * Placeholders @FILE_NAME@, @LUA_BYTECODE@, and @LUA_BYTECODE_LEN@ are
+ * substituted by CMake's configure_file when add_lua_bytecode_thread() is
+ * called from lua.cmake.
+ * The generated file creates a Zephyr thread with its own sys_heap,
+ * Lua state, and pre-compiled bytecode (loaded via luaL_loadbuffer).
+ */
+
+/* clang-format off */
+
+#include <stdint.h>
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+#include <lua_zephyr/utils.h>
+#include <zephyr/kernel.h>
+
+static char heap_mem[CONFIG_LUA_THREAD_HEAP_SIZE];
+static struct sys_heap lua_heap;
+static const uint8_t @FILE_NAME@_lua_bytecode[] = { @LUA_BYTECODE@ };
+static const size_t @FILE_NAME@_lua_bytecode_len = @LUA_BYTECODE_LEN@;
+
+/**
+ * @brief Weak setup hook called before the Lua script executes.
+ *
+ * Override this function to load libraries, declare zbus channels/observers,
+ * or perform any per-thread Lua state initialization.
+ *
+ * @param L  Lua state for this thread.
+ * @return 0 on success, non-zero to abort script execution.
+ */
+int __weak @FILE_NAME@_lua_setup(lua_State *L)
+{
+    ARG_UNUSED(L);
+
+	return 0;
+}
+
+/** @brief Print heap usage statistics (allocated, free, max allocated). */
+static void print_sys_memory_stats(struct sys_heap *hp)
+{
+	struct sys_memory_stats stats;
+
+	sys_heap_runtime_stats_get(hp, &stats);
+
+	printk("allocated %zu, free %zu, max allocated %zu, heap size %u\n", stats.allocated_bytes,
+	       stats.free_bytes, stats.max_allocated_bytes, CONFIG_LUA_THREAD_HEAP_SIZE);
+}
+
+/** @brief Thread entry point: init heap, create Lua state, and run bytecode. */
+static void @FILE_NAME@_lua_thread(void*p1, void*p2, void*p3)
+{
+    ARG_UNUSED(p1);
+    ARG_UNUSED(p2);
+    ARG_UNUSED(p3);
+
+	sys_heap_init(&lua_heap, heap_mem, CONFIG_LUA_THREAD_HEAP_SIZE);
+
+	lua_State *L = lua_newstate(lua_zephyr_allocator, &lua_heap);
+
+    int err = @FILE_NAME@_lua_setup(L);
+    if(err) {
+        lua_close(L);
+        __ASSERT(false, "Setup required to be successful");
+        return;
+    }
+
+	if (luaL_loadbuffer(L, (const char *)@FILE_NAME@_lua_bytecode,
+	                    @FILE_NAME@_lua_bytecode_len, "@FILE_NAME@") != LUA_OK ||
+	    lua_pcall(L, 0, LUA_MULTRET, 0) != LUA_OK) {
+		printk("Lua error: %s\n", lua_tostring(L, -1));
+		lua_pop(L, 1);
+	}
+
+	lua_close(L);
+
+	print_sys_memory_stats(&lua_heap);
+
+    k_sleep(K_FOREVER);
+}
+
+K_THREAD_DEFINE(@FILE_NAME@_lua_thread_id, CONFIG_LUA_THREAD_STACK_SIZE, @FILE_NAME@_lua_thread, NULL, NULL, NULL, CONFIG_LUA_THREAD_PRIORITY, 0, 0);
+
+/* clang-format on */

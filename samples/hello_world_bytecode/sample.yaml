@@ -1,11 +1,10 @@
 sample:
-  name: Hello World
+  name: Hello World Bytecode
 tests:
-  sample.lua_zephyr.hello_world:
+  sample.lua_zephyr.hello_world_bytecode:
     harness: console
     extra_configs:
       - CONFIG_QEMU_ICOUNT=y
-      - CONFIG_SHELL=n
       - CONFIG_THREAD_NAME=y
       - CONFIG_LOG_MODE_MINIMAL=y
     harness_config:

@@ -1,0 +1,22 @@
+/**
+ * @file lua_bytecode_template.h.in
+ * @brief CMake configure_file template for embedding Lua bytecode as a C array.
+ *
+ * Placeholders @FILE_NAME@, @LUA_BYTECODE@, and @LUA_BYTECODE_LEN@ are
+ * substituted by CMake's configure_file when add_lua_bytecode_file() is
+ * called from lua.cmake.
+ * The generated header provides a const uint8_t[] containing the bytecode.
+ */
+
+/* clang-format off */
+#ifndef LUA_@FILE_NAME@_BYTECODE
+#define LUA_@FILE_NAME@_BYTECODE
+
+#include <stdint.h>
+#include <stddef.h>
+
+static const uint8_t @FILE_NAME@_lua_bytecode[] = { @LUA_BYTECODE@ };
+static const size_t @FILE_NAME@_lua_bytecode_len = @LUA_BYTECODE_LEN@;
+
+#endif /* LUA_@FILE_NAME@_BYTECODE */
+/* clang-format on */

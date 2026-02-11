@@ -17,12 +17,24 @@ if(CONFIG_LUA)
     # The lua files
     file(GLOB SRC "${SRC_DIR}/*.c")
 
+    if(CONFIG_LUA_PRECOMPILE_ONLY)
+        list(REMOVE_ITEM SRC
+            "${SRC_DIR}/lparser.c"
+            "${SRC_DIR}/llex.c"
+            "${SRC_DIR}/lcode.c"
+        )
+    endif()
+
     zephyr_library_sources("${SRC}"
                            "${SRC_DIR}/lua_zephyr/utils.c"
                            "${SRC_DIR}/lua_zephyr/lua_zbus.c"
                            "${SRC_DIR}/lua_zephyr/lua_msg_descr.c"
                            "${SRC_DIR}/lua_zephyr/lua_repl.c"
     )
+
+    if(CONFIG_LUA_PRECOMPILE_ONLY)
+        zephyr_library_sources("${SRC_DIR}/lua_zephyr/lua_parser_stubs.c")
+    endif()
 
     # Add the helper functions to be used inside the user CMakeLists.txt. For
     # now, only `add_lua_file` exists.
