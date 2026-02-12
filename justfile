@@ -73,7 +73,7 @@ test:
 
 # Format project C/H files (excludes core Lua sources)
 format:
-    clang-format -i lua_zephyr/src/lua_zephyr/*.c lua_zephyr/include/lua_zephyr/*.h
+    clang-format -i src/lua_zephyr/*.c include/lua_zephyr/*.h
     clang-format -i samples/*/src/*.c samples/*/include/*.h
 
 # ── Default ──────────────────────────────────────────────────────────────────────
