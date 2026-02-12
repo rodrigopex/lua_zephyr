@@ -4,21 +4,42 @@
 
 A [Zephyr RTOS](https://zephyrproject.org/) module that integrates
 [Lua 5.5.0](https://www.lua.org/) as a first-class scripting engine for
-embedded systems.
+embedded systems. Lua scripts run in **dedicated threads** with **isolated
+heaps**; inter-thread communication happens through **zbus channels**, keeping
+scripting sandboxed and deterministic.
 
-Lua scripts run in **dedicated threads** with **isolated heaps**; inter-thread
-communication happens through **zbus channels**, keeping scripting sandboxed
-and deterministic.
+![Architecture](https://github.com/user-attachments/assets/c6bc2fc3-6ba3-45a1-98c0-98e4dd28f1bf)
+
+Each Lua thread gets its own **sys_heap**, **stack**, and **allocator** — fully
+isolated from every other thread. Scripts talk to the rest of the firmware
+exclusively through **zbus**, so adding or removing a Lua script never
+destabilises the system.
 
 ## Features
 
-- **Embedded scripts** — Lua source compiled into the firmware image as C strings
-- **Bytecode precompilation** — optional build-time compilation to bytecode; strip the parser to save ~15-20 KB of flash
-- **Filesystem loading** — run scripts from LittleFS (or any Zephyr-supported FS) at runtime
-- **zbus bindings** — publish, read, and subscribe to zbus channels directly from Lua
+**Script loading** — three ways to get Lua code onto a target:
+
+- **Embedded source** — compiled into the firmware image as C strings
+- **Precompiled bytecode** — strip the parser at build time, saving ~15-20 KB flash
+- **Filesystem** — load scripts from LittleFS (or any Zephyr FS) at runtime
+
+**System integration:**
+
+- **zbus bindings** — publish, read, and subscribe to channels directly from Lua
 - **Message descriptors** — automatic Lua table ↔ C struct conversion (manual or nanopb-generated)
+- **Kernel API** — `msleep`, `printk`, structured logging (`log_inf`, `log_wrn`, `log_dbg`, `log_err`)
 - **Interactive REPL** — Lua shell over the Zephyr console
-- **Kernel API bindings** — `msleep`, `printk`, structured logging (`log_inf`, `log_wrn`, `log_dbg`, `log_err`)
+
+## Table of Contents
+
+- [Quick Start](#quick-start)
+- [Samples](#samples)
+- [How It Works](#how-it-works)
+- [CMake API](#cmake-api)
+- [Lua API](#lua-api)
+- [Message Descriptors](#message-descriptors)
+- [Configuration](#configuration)
+- [License](#license)
 
 ## Quick Start
 
@@ -27,7 +48,7 @@ and deterministic.
 - A [Zephyr workspace](https://docs.zephyrproject.org/latest/develop/getting_started/index.html) (west, SDK, toolchain)
 - [`just`](https://github.com/casey/just) command runner (optional but recommended)
 
-### Add the module
+### 1. Add the module
 
 Clone (or add as a west module) next to your Zephyr workspace, then point your
 application's `CMakeLists.txt` at it:
@@ -47,7 +68,7 @@ add_lua_thread("src/my_script.lua")
 target_sources(app PRIVATE src/main.c)
 ```
 
-### Minimal Lua script
+### 2. Write a Lua script
 
 ```lua
 -- src/my_script.lua
@@ -58,10 +79,11 @@ z.msleep(1000)
 z.printk("Done.")
 ```
 
-### Setup hook (main.c)
+### 3. Wire up the setup hook
 
-Each `add_lua_thread("src/my_script.lua")` call expects a setup hook named
-`my_script_lua_setup` where you register the libraries the script needs:
+Each `add_lua_thread("src/my_script.lua")` generates a thread that calls
+`my_script_lua_setup` before running the script — use it to register
+the libraries your script needs:
 
 ```c
 #include <lua.h>
@@ -80,13 +102,12 @@ int main(void)
 }
 ```
 
-### Enable Lua in prj.conf
+### 4. Enable Lua and build
 
 ```
+# prj.conf
 CONFIG_LUA=y
 ```
-
-### Build & run
 
 ```sh
 just build          # west build -b mps2/an385 app
@@ -95,40 +116,91 @@ just run            # west build -t run
 
 ## Samples
 
-| Sample                 | Description                              | Key Features                                        |
-| ---------------------- | ---------------------------------------- | --------------------------------------------------- |
-| `hello_world`          | Basic Lua thread + embedded script       | `add_lua_thread`, `add_lua_file`, REPL, logging     |
-| `hello_world_bytecode` | Bytecode-only variant                    | `add_lua_bytecode_thread`, parser stripped          |
-| `producer_consumer`    | zbus pub/sub between Lua and C           | nanopb descriptors, nested structs, bytecode        |
-| `littlefs`             | Scripts loaded from LittleFS at runtime  | `add_lua_fs_thread`, `add_lua_fs_file`, `fs.dofile` |
-| `heavy`                | Stress test with dynamic code generation | Heap usage tracking, recursion, string ops          |
+Every sample includes a `sample.yaml` for automated testing with
+[twister](https://docs.zephyrproject.org/latest/develop/test/twister.html).
 
-Run a sample:
+| Sample                                                 | Description                              | Key Features                                        |
+| ------------------------------------------------------ | ---------------------------------------- | --------------------------------------------------- |
+| [`hello_world`](samples/hello_world)                   | Basic Lua thread + embedded script       | `add_lua_thread`, `add_lua_file`, REPL, logging     |
+| [`hello_world_bytecode`](samples/hello_world_bytecode) | Bytecode-only variant                    | `add_lua_bytecode_thread`, parser stripped          |
+| [`producer_consumer`](samples/producer_consumer)       | zbus pub/sub between Lua and C           | nanopb descriptors, nested structs, bytecode        |
+| [`littlefs`](samples/littlefs)                         | Scripts loaded from LittleFS at runtime  | `add_lua_fs_thread`, `add_lua_fs_file`, `fs.dofile` |
+| [`heavy`](samples/heavy)                               | Stress test with dynamic code generation | Heap usage tracking, recursion, string ops          |
 
 ```sh
-# Point the build at a sample directory
+# Run a single sample
 just build project_dir=samples/hello_world
 just run
-```
 
-Run the full test suite:
-
-```sh
+# Run the full test suite
 just test           # west twister -p mps2/an385 -T samples
 ```
+
+## How It Works
+
+### Thread model
+
+Each `add_lua_thread()` (or its bytecode / filesystem variant) generates a
+self-contained Zephyr thread with:
+
+- A dedicated **sys_heap** (`CONFIG_LUA_THREAD_HEAP_SIZE`, default 32 KB)
+- A dedicated **thread stack** (`CONFIG_LUA_THREAD_STACK_SIZE`, default 2 KB)
+- A custom **Lua allocator** backed by that heap
+- A **setup hook** (`<script>_lua_setup`) for registering libraries
+
+There are three thread flavours:
+
+| Variant        | CMake function            | Script location                      |
+| -------------- | ------------------------- | ------------------------------------ |
+| **Source**     | `add_lua_thread`          | Embedded as C string, parsed at boot |
+| **Bytecode**   | `add_lua_bytecode_thread` | Precompiled, parser can be stripped  |
+| **Filesystem** | `add_lua_fs_thread`       | Loaded from FS path at runtime       |
+
+### zbus integration
+
+Scripts interact with the rest of the system exclusively through
+[zbus](https://docs.zephyrproject.org/latest/services/zbus/index.html)
+channels. The module provides weakly-defined conversion hooks:
+
+- `msg_struct_to_lua_table(L, chan, message)` — C struct → Lua table
+- `lua_table_to_msg_struct(L, chan, message)` — Lua table → C struct
+
+The default implementations look up **message descriptors** stored in `zbus_chan_user_data()`
+and convert automatically — see [Message Descriptors](#message-descriptors) below.
+Applications can override these hooks with strong definitions for custom serialization.
+
+### Module structure
+
+| Path         | Contents                                                                    |
+| ------------ | --------------------------------------------------------------------------- |
+| `lua/`       | Lua 5.5.0 core (git submodule — **do not modify**)                          |
+| `src/`       | Zephyr integration: allocator, kernel bindings, zbus, REPL, FS, descriptors |
+| `include/`   | Public headers (`luaz_utils.h`, `luaz_zbus.h`, `luaz_fs.h`, …)              |
+| `templates/` | `.c.in` / `.h.in` files used by the CMake code-gen functions                |
+| `scripts/`   | Python helpers (`lua_cat.py`, `lua_compile.py`)                             |
+| `samples/`   | Ready-to-build example applications                                         |
+
+---
 
 ## CMake API
 
 All functions are provided by `lua.cmake` (auto-included when the module is loaded).
 
+### Thread generators
+
 | Function                        | Description                                                                              |
 | ------------------------------- | ---------------------------------------------------------------------------------------- |
-| `add_lua_thread(path)`          | Generate a Zephyr thread that runs an embedded Lua source script                         |
+| `add_lua_thread(path)`          | Embed a Lua source script and run it in a dedicated Zephyr thread                        |
 | `add_lua_bytecode_thread(path)` | Same, but precompile to bytecode at build time (`CONFIG_LUA_PRECOMPILE`)                 |
 | `add_lua_fs_thread(fs_path)`    | Generate a thread that loads its script from the filesystem at runtime (`CONFIG_LUA_FS`) |
-| `add_lua_file(path)`            | Embed a `.lua` file as a C `const char[]` header                                         |
-| `add_lua_bytecode_file(path)`   | Embed precompiled bytecode as a C `uint8_t[]` header                                     |
-| `add_lua_fs_file(src [name])`   | Register a Lua file for embedding and writing to the filesystem at boot                  |
+
+### File embedders
+
+| Function                      | Description                                                             |
+| ----------------------------- | ----------------------------------------------------------------------- |
+| `add_lua_file(path)`          | Embed a `.lua` file as a C `const char[]` header                        |
+| `add_lua_bytecode_file(path)` | Embed precompiled bytecode as a C `uint8_t[]` header                    |
+| `add_lua_fs_file(src [name])` | Register a Lua file for embedding and writing to the filesystem at boot |
 
 ## Lua API
 
@@ -171,7 +243,7 @@ filesystem-backed versions, so scripts can use them transparently.
 
 ## Message Descriptors
 
-The descriptor system provides **automatic Lua table <-> C struct conversion**
+The descriptor system provides **automatic Lua table ↔ C struct conversion**
 for zbus messages. Descriptors are stored as zbus channel `user_data` for O(1)
 lookup — the default `__weak` conversion hooks in `luaz_zbus.c` use them
 automatically.
@@ -226,8 +298,8 @@ ZBUS_CHAN_DEFINE(chan_acc_data, struct msg_acc_data, NULL,
 ```
 
 Nested MESSAGE fields are resolved automatically via nanopb's
-`<parent_t>_<field>_MSGTYPE` macros. See the `producer_consumer` sample for a
-complete example.
+`<parent_t>_<field>_MSGTYPE` macros. See the [`producer_consumer`](samples/producer_consumer)
+sample for a complete example.
 
 ## Configuration
 
@@ -247,21 +319,6 @@ All options live under `Kconfig.lua_module`.
 | `CONFIG_LUA_FS_MOUNT_POINT`    | `"/lfs"` | Filesystem mount point prefix                                        |
 | `CONFIG_LUA_FS_MAX_FILE_SIZE`  | `4096`   | Maximum Lua script file size (bytes)                                 |
 | `CONFIG_LUA_FS_SHELL`          | `n`      | Enable `lua_fs` shell commands (list, cat, write, delete, run, stat) |
-
-## Architecture
-
-Each `add_lua_thread()` (or bytecode/fs variant) generates a self-contained
-Zephyr thread with:
-
-- A dedicated **sys_heap** (`CONFIG_LUA_THREAD_HEAP_SIZE`)
-- A dedicated **thread stack** (`CONFIG_LUA_THREAD_STACK_SIZE`)
-- A custom **Lua allocator** backed by the thread's heap
-- A **setup hook** (`<script>_lua_setup`) for registering libraries
-
-Scripts interact with the rest of the system exclusively through **zbus
-channels**, keeping the Lua sandbox isolated from direct hardware access.
-
-![Architecture](https://github.com/user-attachments/assets/c6bc2fc3-6ba3-45a1-98c0-98e4dd28f1bf)
 
 ## License
 
