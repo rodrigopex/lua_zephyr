@@ -160,11 +160,74 @@ setup hook with `LUA_ZBUS_CHAN_DECLARE` / `LUA_ZBUS_OBS_DECLARE`.
 
 Loaded with `LUA_REQUIRE(fs)`. Requires `CONFIG_LUA_FS=y`.
 
+Loading this library also replaces the global `dofile` and `loadfile` with
+filesystem-backed versions, so scripts can use them transparently.
+
 | Function            | Description                                          |
 | ------------------- | ---------------------------------------------------- |
 | `fs.dofile(path)`   | Load and execute a Lua script from the filesystem    |
 | `fs.loadfile(path)` | Load a script without executing (returns a function) |
 | `fs.list([path])`   | List files in a directory                            |
+
+## Message Descriptors
+
+The descriptor system provides **automatic Lua table <-> C struct conversion**
+for zbus messages. Descriptors are stored as zbus channel `user_data` for O(1)
+lookup — the default `__weak` conversion hooks in `luaz_zbus.c` use them
+automatically.
+
+### Manual descriptors
+
+Define field arrays and pass them inline to `ZBUS_CHAN_DEFINE`:
+
+```c
+#include <luaz_msg_descr.h>
+
+struct sensor_data {
+        int32_t x, y, z;
+};
+
+static const struct lua_msg_field_descr sensor_fields[] = {
+        LUA_MSG_FIELD(struct sensor_data, x, LUA_MSG_TYPE_INT),
+        LUA_MSG_FIELD(struct sensor_data, y, LUA_MSG_TYPE_INT),
+        LUA_MSG_FIELD(struct sensor_data, z, LUA_MSG_TYPE_INT),
+};
+
+ZBUS_CHAN_DEFINE(chan_sensor, struct sensor_data, NULL,
+                LUA_ZBUS_MSG_DESCR(struct sensor_data, sensor_fields),
+                ZBUS_OBSERVERS_EMPTY, ZBUS_MSG_INIT(0));
+```
+
+For nested structs use `LUA_MSG_FIELD_OBJECT`:
+
+```c
+LUA_MSG_FIELD_OBJECT(struct parent, child_field, child_fields),
+```
+
+Supported field types: `LUA_MSG_TYPE_INT`, `LUA_MSG_TYPE_UINT`,
+`LUA_MSG_TYPE_NUMBER`, `LUA_MSG_TYPE_STRING`, `LUA_MSG_TYPE_STRING_BUF`,
+`LUA_MSG_TYPE_BOOL`, `LUA_MSG_TYPE_OBJECT`.
+
+### nanopb descriptor bridge
+
+When using [nanopb](https://jpa.kapsi.fi/nanopb/), `luaz_msg_descr_pb.h`
+auto-generates descriptors from nanopb `FIELDLIST` X-macros — the `.proto`
+file becomes the single source of truth:
+
+```c
+#include <luaz_msg_descr_pb.h>
+#include "channels.pb.h"
+
+/* Child descriptors must be defined before parents (leaf-first) */
+LUA_PB_DESCR_DEFINE(msg_acc_data);
+ZBUS_CHAN_DEFINE(chan_acc_data, struct msg_acc_data, NULL,
+                LUA_PB_DESCR_REF(msg_acc_data),
+                ZBUS_OBSERVERS_EMPTY, ZBUS_MSG_INIT(.x = 0));
+```
+
+Nested MESSAGE fields are resolved automatically via nanopb's
+`<parent_t>_<field>_MSGTYPE` macros. See the `producer_consumer` sample for a
+complete example.
 
 ## Configuration
 
