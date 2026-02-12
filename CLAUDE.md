@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # Restrictions
 
-Lua core sources live in a git submodule (`lua_zephyr/lua/` → `github.com/lua/lua` at `v5.5.0`). Do not modify files inside the submodule. Only modify files in `lua_zephyr/src/lua_zephyr/`, `lua_zephyr/include/lua_zephyr/`, and `lua_zephyr/host_tools/`.
+Lua core sources live in a git submodule (`lua/` → `github.com/lua/lua` at `v5.5.0`). Do not modify files inside the submodule. Only modify files in `src/lua_zephyr/`, `include/lua_zephyr/`, and `host_tools/`.
 
 ## Project
 
@@ -37,13 +37,13 @@ west twister -p mps2/an385 -T samples -O /tmp/lua_tests/
 ### Formatting
 
 ```sh
-just format          # Runs clang-format on lua_zephyr/ and samples/ C/H files
+just format          # Runs clang-format on src/ include/ and samples/ C/H files
 clang-format -i <file>   # Uses .clang-format (Zephyr-aligned LLVM, 8-space indent, 100-col limit)
 ```
 
 ## Architecture
 
-### Module Structure (`lua_zephyr/`)
+### Module Structure
 
 - **Lua 5.5.0 core** — Git submodule (`lua/`) from `github.com/lua/lua` at tag `v5.5.0`
 - **Zephyr integration** (`src/lua_zephyr/`):

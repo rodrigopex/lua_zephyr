@@ -50,7 +50,7 @@ function(add_lua_file FILE_NAME_PATH)
     COMMAND_ERROR_IS_FATAL ANY
   )
 
-    configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/lua_template.h.in"
+    configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/templates/lua_template.h.in"
     "${CMAKE_CURRENT_BINARY_DIR}/lua/${FILE_NAME}_lua_script.h")
 
     include_directories("${CMAKE_BINARY_DIR}/lua")
@@ -81,7 +81,7 @@ function(add_lua_thread FILE_NAME_PATH)
     COMMAND_ERROR_IS_FATAL ANY
   )
 
-    configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/lua_thread.c.in"
+    configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/templates/lua_thread.c.in"
     "${CMAKE_CURRENT_BINARY_DIR}/lua/${FILE_NAME}_lua_thread.c")
 
     include_directories("${CMAKE_BINARY_DIR}/lua")
@@ -121,7 +121,7 @@ function(add_lua_bytecode_file FILE_NAME_PATH)
     set(LUA_BYTECODE_LEN "${CMAKE_MATCH_1}")
     set(LUA_BYTECODE "${CMAKE_MATCH_2}")
 
-    configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/lua_bytecode_template.h.in"
+    configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/templates/lua_bytecode_template.h.in"
     "${CMAKE_CURRENT_BINARY_DIR}/lua/${FILE_NAME}_lua_bytecode.h")
 
     include_directories("${CMAKE_BINARY_DIR}/lua")
@@ -161,7 +161,7 @@ function(add_lua_bytecode_thread FILE_NAME_PATH)
     set(LUA_BYTECODE_LEN "${CMAKE_MATCH_1}")
     set(LUA_BYTECODE "${CMAKE_MATCH_2}")
 
-    configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/lua_bytecode_thread.c.in"
+    configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/templates/lua_bytecode_thread.c.in"
     "${CMAKE_CURRENT_BINARY_DIR}/lua/${FILE_NAME}_lua_bytecode_thread.c")
 
     include_directories("${CMAKE_BINARY_DIR}/lua")
@@ -192,7 +192,7 @@ function(add_lua_fs_thread SCRIPT_FS_PATH)
 
     set(LUA_FS_PATH "${SCRIPT_FS_PATH}")
 
-    configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/lua_fs_thread.c.in"
+    configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/templates/lua_fs_thread.c.in"
     "${CMAKE_CURRENT_BINARY_DIR}/lua/${FILE_NAME}_lua_fs_thread.c")
 
     include_directories("${CMAKE_BINARY_DIR}/lua")
