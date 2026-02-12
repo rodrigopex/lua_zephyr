@@ -1,5 +1,5 @@
 /**
- * @file zbus.h
+ * @file luaz_zbus.h
  * @brief Lua bindings for Zephyr zbus channels and observers.
  *
  * Provides macros and functions to expose zbus channels and observers
@@ -7,8 +7,8 @@
  * to make zbus objects available to Lua scripts.
  */
 
-#ifndef _LUA_ZBUS_H
-#define _LUA_ZBUS_H
+#ifndef _LUAZ_ZBUS_H
+#define _LUAZ_ZBUS_H
 
 #include <lua.h>
 #include <zephyr/kernel.h>
@@ -63,4 +63,4 @@ int lua_zbus_obs_declare(lua_State *L, const struct zbus_observer *obs, const ch
  */
 int luaopen_zbus(lua_State *L);
 
-#endif /* _LUA_ZBUS_H */
+#endif /* _LUAZ_ZBUS_H */

@@ -12,7 +12,7 @@
 #include <zephyr/fs/littlefs.h>
 #include <zephyr/storage/flash_map.h>
 #include <zephyr/logging/log.h>
-#include <lua_zephyr/lua_fs.h>
+#include <lua_zephyr/luaz_fs.h>
 
 #include "hello_fs_lua_script.h"
 #include "greet_lua_script.h"

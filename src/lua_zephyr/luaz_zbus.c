@@ -1,5 +1,5 @@
 /**
- * @file lua_zbus.c
+ * @file luaz_zbus.c
  * @brief Lua bindings for Zephyr zbus: publish, read, wait, and serialization.
  *
  * Implements channel and observer userdata types with metatables so Lua scripts
@@ -11,9 +11,9 @@
 #include <lualib.h>
 #include <sys/times.h>
 #include <zephyr/zbus/zbus.h>
-#include <lua_zephyr/utils.h>
-#include <lua_zephyr/zbus.h>
-#include <lua_zephyr/lua_msg_descr.h>
+#include <lua_zephyr/luaz_utils.h>
+#include <lua_zephyr/luaz_zbus.h>
+#include <lua_zephyr/luaz_msg_descr.h>
 #include <zephyr/kernel.h>
 #include <zephyr/init.h>
 

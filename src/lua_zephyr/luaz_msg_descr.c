@@ -1,12 +1,12 @@
 /**
- * @file lua_msg_descr.c
+ * @file luaz_msg_descr.c
  * @brief Descriptor-based Lua <-> C struct conversion for zbus messages.
  *
  * Provides lua_msg_descr_to_table and lua_msg_descr_from_table helper
  * functions used by lua_zbus.c via the channel user_data descriptor lookup.
  */
 
-#include <lua_zephyr/lua_msg_descr.h>
+#include <lua_zephyr/luaz_msg_descr.h>
 #include <lauxlib.h>
 #include <string.h>
 #include <zephyr/kernel.h>
