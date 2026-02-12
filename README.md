@@ -3,7 +3,7 @@
 > **Alpha** — API may change. Feedback welcome!
 
 A [Zephyr RTOS](https://zephyrproject.org/) module that integrates
-[Lua 5.4.7](https://www.lua.org/) as a first-class scripting engine for
+[Lua 5.5.0](https://www.lua.org/) as a first-class scripting engine for
 embedded systems.
 
 Lua scripts run in **dedicated threads** with **isolated heaps**; inter-thread
