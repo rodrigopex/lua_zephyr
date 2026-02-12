@@ -89,7 +89,7 @@ CONFIG_LUA=y
 ### Build & run
 
 ```sh
-just build          # west build -b qemu_cortex_m3 app
+just build          # west build -b mps2/an385 app
 just run            # west build -t run
 ```
 

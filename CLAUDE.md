@@ -12,19 +12,19 @@ Zephyr RTOS module integrating Lua 5.5.0 as a first-class scripting engine for e
 
 ## Build Commands
 
-Uses `just` (justfile) with West/CMake underneath. Default board: `qemu_cortex_m3`.
+Uses `just` (justfile) with West/CMake underneath. Default board: `mps2/an385`.
 
-| Command            | Alias     | Description                                           |
-| ------------------ | --------- | ----------------------------------------------------- |
-| `just build`       | `just b`  | Build (`west build -d ./build -b qemu_cortex_m3 app`) |
-| `just rebuild`     | `just bb` | Rebuild without full reconfigure                      |
-| `just clean`       | `just c`  | Remove build directory                                |
-| `just run`         | `just r`  | Build and run in QEMU                                 |
-| `just config`      |           | Open menuconfig                                       |
-| `just debugserver` | `just ds` | Start QEMU GDB server                                 |
-| `just attach`      | `just da` | Attach GDB to running debug session                   |
-| `just test`        |           | Run twister test suite (`-p mps2/an385 -T samples`)   |
-| `just format`      |           | Format project C/H files (excludes core Lua sources)  |
+| Command            | Alias     | Description                                          |
+| ------------------ | --------- | ---------------------------------------------------- |
+| `just build`       | `just b`  | Build (`west build -d ./build -b mps2/an385 app`)    |
+| `just rebuild`     | `just bb` | Rebuild without full reconfigure                     |
+| `just clean`       | `just c`  | Remove build directory                               |
+| `just run`         | `just r`  | Build and run in QEMU                                |
+| `just config`      |           | Open menuconfig                                      |
+| `just debugserver` | `just ds` | Start QEMU GDB server                                |
+| `just attach`      | `just da` | Attach GDB to running debug session                  |
+| `just test`        |           | Run twister test suite (`-p mps2/an385 -T samples`)  |
+| `just format`      |           | Format project C/H files (excludes core Lua sources) |
 
 ### Running Tests
 
