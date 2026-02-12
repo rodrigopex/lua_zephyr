@@ -7,7 +7,7 @@
  * both protobuf serialization and Lua table conversion.
  *
  * Usage:
- *   #include <lua_zephyr/luaz_msg_descr_pb.h>
+ *   #include <luaz_msg_descr_pb.h>
  *   #include "channels.pb.h"
  *
  *   LUA_PB_DESCR_DEFINE(msg_acc_data);
@@ -31,7 +31,7 @@
 #ifndef LUAZ_MSG_DESCR_PB_H
 #define LUAZ_MSG_DESCR_PB_H
 
-#include <lua_zephyr/luaz_msg_descr.h>
+#include <luaz_msg_descr.h>
 
 /* clang-format off */
 

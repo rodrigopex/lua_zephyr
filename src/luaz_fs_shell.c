@@ -13,8 +13,8 @@
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
-#include <lua_zephyr/luaz_utils.h>
-#include <lua_zephyr/luaz_fs.h>
+#include <luaz_utils.h>
+#include <luaz_fs.h>
 #include <zephyr/kernel.h>
 #include <zephyr/shell/shell.h>
 #include <zephyr/fs/fs.h>

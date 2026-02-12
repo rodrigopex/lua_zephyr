@@ -8,7 +8,7 @@
  */
 
 #include "channels.h"
-#include <lua_zephyr/luaz_msg_descr_pb.h>
+#include <luaz_msg_descr_pb.h>
 
 /* clang-format off */
 LUA_PB_DESCR_DEFINE(msg_acc_data);

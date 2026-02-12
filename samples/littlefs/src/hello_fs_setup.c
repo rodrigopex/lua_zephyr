@@ -8,8 +8,8 @@
 
 #include <lauxlib.h>
 #include <lualib.h>
-#include <lua_zephyr/luaz_utils.h>
-#include <lua_zephyr/luaz_fs.h>
+#include <luaz_utils.h>
+#include <luaz_fs.h>
 
 /** @brief Setup hook: load zephyr + fs libraries for the FS-backed thread. */
 int lfs_hello_fs_lua_lua_setup(lua_State *L)

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # Restrictions
 
-Lua core sources live in a git submodule (`lua/` → `github.com/lua/lua` at `v5.5.0`). Do not modify files inside the submodule. Only modify files in `src/lua_zephyr/`, `include/lua_zephyr/`, and `host_tools/`.
+Lua core sources live in a git submodule (`lua/` → `github.com/lua/lua` at `v5.5.0`). Do not modify files inside the submodule. Only modify files in `src/`, `include/`, and `host_tools/`.
 
 ## Project
 
@@ -46,7 +46,7 @@ clang-format -i <file>   # Uses .clang-format (Zephyr-aligned LLVM, 8-space inde
 ### Module Structure
 
 - **Lua 5.5.0 core** — Git submodule (`lua/`) from `github.com/lua/lua` at tag `v5.5.0`
-- **Zephyr integration** (`src/lua_zephyr/`):
+- **Zephyr integration** (`src/`):
   - `luaz_utils.c` — Custom `sys_heap` allocator, kernel API bindings (`zephyr.msleep`, `zephyr.printk`, `zephyr.log_*`)
   - `luaz_zbus.c` — zbus channel/observer Lua bindings (pub, read, wait_msg)
   - `luaz_msg_descr.c` — Descriptor-based Lua↔C struct conversion (helper library)

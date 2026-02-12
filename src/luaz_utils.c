@@ -7,7 +7,7 @@
  */
 
 #include "lua.h"
-#include "lua_zephyr/luaz_utils.h"
+#include "luaz_utils.h"
 
 #include <lauxlib.h>
 #include <lualib.h>

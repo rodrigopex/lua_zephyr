@@ -8,7 +8,7 @@
 #include <lauxlib.h>
 #include <lua.h>
 #include <lualib.h>
-#include <lua_zephyr/luaz_utils.h>
+#include <luaz_utils.h>
 
 #include "sample01_lua_script.h"
 
