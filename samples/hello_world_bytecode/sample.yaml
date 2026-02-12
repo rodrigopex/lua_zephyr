@@ -20,3 +20,4 @@ tests:
     tags: lua_zephyr
     integration_platforms:
       - qemu_x86
+      - mps2/an385
