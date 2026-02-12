@@ -5,3 +5,4 @@ compile_commands.json
 twister-out*
 __cmake_systeminformation/
 __pycache__/
+conversation_log.md
