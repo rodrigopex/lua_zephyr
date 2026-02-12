@@ -139,7 +139,7 @@ static int cmd_cat(const struct shell *sh, size_t argc, char **argv)
  *
  * Uses the same approach as lua_repl.c shell_getline.
  */
-static int shell_readline(const struct shell *sh, char *buf, size_t len, bool *eof)
+static int lua_fs_shell_readline(const struct shell *sh, char *buf, size_t len, bool *eof)
 {
 	const struct shell_transport_api *sh_api = sh->iface->api;
 
@@ -219,7 +219,7 @@ static int cmd_write(const struct shell *sh, size_t argc, char **argv)
 	while (true) {
 		shell_fprintf(sh, SHELL_NORMAL, "> ");
 		bool eof = false;
-		int n = shell_readline(sh, line, sizeof(line), &eof);
+		int n = lua_fs_shell_readline(sh, line, sizeof(line), &eof);
 
 		shell_print(sh, "");
 
@@ -285,7 +285,7 @@ static int cmd_run(const struct shell *sh, size_t argc, char **argv)
 
 	sys_heap_init(&run_heap, heap_buf, CONFIG_LUA_THREAD_HEAP_SIZE);
 
-	lua_State *L = lua_newstate(lua_zephyr_allocator, &run_heap);
+	lua_State *L = lua_newstate(lua_zephyr_allocator, &run_heap, 0);
 
 	if (L == NULL) {
 		shell_error(sh, "Failed to create Lua state");

@@ -127,7 +127,7 @@ static int lua_repl_cmd(const struct shell *sh, size_t argc, char **argv, void *
 
 	sys_heap_init(&self.lua_heap.heap, self.lua_heap.buffer, CONFIG_LUA_THREAD_HEAP_SIZE);
 
-	lua_State *L = lua_newstate(lua_zephyr_allocator, &self.lua_heap.heap);
+	lua_State *L = lua_newstate(lua_zephyr_allocator, &self.lua_heap.heap, 0);
 	if (L == NULL) {
 		shell_error(sh, "Failed to create Lua state");
 		return -ENOMEM;
@@ -138,7 +138,7 @@ static int lua_repl_cmd(const struct shell *sh, size_t argc, char **argv, void *
 
 	shell_print(
 		sh,
-		"\nZephyr Lua v5.4.7 REPL. Press Ctrl+D to exit or Ctrl+L to clear the screen.\n");
+		"\nZephyr Lua v5.5.0 REPL. Press Ctrl+D to exit or Ctrl+L to clear the screen.\n");
 
 	while (true) {
 		shell_fprintf(sh, SHELL_NORMAL, "lua> ");

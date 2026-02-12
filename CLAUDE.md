@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # Restrictions
 
-We are not going to change any Lua source files. They are inside the @lua_zephyr/include and @lua_zephyr/src. The only exception is the @lua_zephyr/src/lua_zephyr and @lua_zephyr/include/lua_zephyr folders.
+Lua core sources live in a git submodule (`lua_zephyr/lua/` → `github.com/lua/lua` at `v5.5.0`). Do not modify files inside the submodule. Only modify files in `lua_zephyr/src/lua_zephyr/`, `lua_zephyr/include/lua_zephyr/`, and `lua_zephyr/host_tools/`.
 
 ## Project
 
-Zephyr RTOS module integrating Lua 5.4.7 as a first-class scripting engine for embedded systems. Lua scripts run in dedicated threads with isolated heaps; IPC happens via zbus channels.
+Zephyr RTOS module integrating Lua 5.5.0 as a first-class scripting engine for embedded systems. Lua scripts run in dedicated threads with isolated heaps; IPC happens via zbus channels.
 
 ## Build Commands
 
@@ -45,7 +45,7 @@ clang-format -i <file>   # Uses .clang-format (Zephyr-aligned LLVM, 8-space inde
 
 ### Module Structure (`lua_zephyr/`)
 
-- **Lua 5.4.7 core** — Full standard implementation (`l*.c` files in `src/`)
+- **Lua 5.5.0 core** — Git submodule (`lua/`) from `github.com/lua/lua` at tag `v5.5.0`
 - **Zephyr integration** (`src/lua_zephyr/`):
   - `utils.c` — Custom `sys_heap` allocator, kernel API bindings (`zephyr.msleep`, `zephyr.printk`, `zephyr.log_*`)
   - `lua_zbus.c` — zbus channel/observer Lua bindings (pub, read, wait_msg)
