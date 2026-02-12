@@ -13,8 +13,8 @@
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
-#include <lua_zephyr/utils.h>
-#include <lua_zephyr/lua_fs.h>
+#include <lua_zephyr/luaz_utils.h>
+#include <lua_zephyr/luaz_fs.h>
 #include <zephyr/kernel.h>
 
 static char heap_mem[CONFIG_LUA_THREAD_HEAP_SIZE];

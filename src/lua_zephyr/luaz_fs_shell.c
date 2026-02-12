@@ -1,5 +1,5 @@
 /**
- * @file lua_fs_shell.c
+ * @file luaz_fs_shell.c
  * @brief Shell commands for managing Lua scripts on the LittleFS filesystem.
  *
  * Provides the `lua_fs` shell command group with subcommands for listing,
@@ -13,8 +13,8 @@
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
-#include <lua_zephyr/utils.h>
-#include <lua_zephyr/lua_fs.h>
+#include <lua_zephyr/luaz_utils.h>
+#include <lua_zephyr/luaz_fs.h>
 #include <zephyr/kernel.h>
 #include <zephyr/shell/shell.h>
 #include <zephyr/fs/fs.h>

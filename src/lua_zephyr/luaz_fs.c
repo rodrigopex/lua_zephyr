@@ -1,5 +1,5 @@
 /**
- * @file lua_fs.c
+ * @file luaz_fs.c
  * @brief Lua filesystem support: script loading and Lua library.
  *
  * Provides C helpers for loading/writing Lua scripts from any mounted
@@ -17,8 +17,8 @@
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
-#include <lua_zephyr/lua_fs.h>
-#include <lua_zephyr/utils.h>
+#include <lua_zephyr/luaz_fs.h>
+#include <lua_zephyr/luaz_utils.h>
 #include <zephyr/kernel.h>
 #include <zephyr/fs/fs.h>
 #include <zephyr/logging/log.h>

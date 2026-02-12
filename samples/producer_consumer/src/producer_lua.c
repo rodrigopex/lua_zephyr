@@ -11,8 +11,8 @@
 #include <lualib.h>
 #include <sys/times.h>
 #include <zephyr/zbus/zbus.h>
-#include <lua_zephyr/utils.h>
-#include <lua_zephyr/zbus.h>
+#include <lua_zephyr/luaz_utils.h>
+#include <lua_zephyr/luaz_zbus.h>
 
 #include "channels.h"
 

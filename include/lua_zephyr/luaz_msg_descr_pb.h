@@ -1,5 +1,5 @@
 /**
- * @file lua_msg_descr_pb.h
+ * @file luaz_msg_descr_pb.h
  * @brief Bridge between nanopb FIELDLIST X-macros and lua_msg_field_descr arrays.
  *
  * Automatically generates lua_msg_field_descr arrays from nanopb-generated
@@ -7,7 +7,7 @@
  * both protobuf serialization and Lua table conversion.
  *
  * Usage:
- *   #include <lua_zephyr/lua_msg_descr_pb.h>
+ *   #include <lua_zephyr/luaz_msg_descr_pb.h>
  *   #include "channels.pb.h"
  *
  *   LUA_PB_DESCR_DEFINE(msg_acc_data);
@@ -28,10 +28,10 @@
  *   - Only STATIC allocation type supported
  */
 
-#ifndef LUA_MSG_DESCR_PB_H
-#define LUA_MSG_DESCR_PB_H
+#ifndef LUAZ_MSG_DESCR_PB_H
+#define LUAZ_MSG_DESCR_PB_H
 
-#include <lua_zephyr/lua_msg_descr.h>
+#include <lua_zephyr/luaz_msg_descr.h>
 
 /* clang-format off */
 
@@ -121,4 +121,4 @@
 
 /* clang-format on */
 
-#endif /* LUA_MSG_DESCR_PB_H */
+#endif /* LUAZ_MSG_DESCR_PB_H */

@@ -9,7 +9,7 @@
 #include <lauxlib.h>
 #include <lua.h>
 #include <lualib.h>
-#include <lua_zephyr/utils.h>
+#include <lua_zephyr/luaz_utils.h>
 
 #include "sample01_lua_bytecode.h"
 

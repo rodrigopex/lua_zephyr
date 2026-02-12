@@ -1,5 +1,5 @@
 /**
- * @file lua_parser_stubs.c
+ * @file luaz_parser_stubs.c
  * @brief Stub implementations for parser/lexer symbols when CONFIG_LUA_PRECOMPILE_ONLY is set.
  *
  * When the Lua parser is excluded from the build (lparser.c, llex.c, lcode.c),

@@ -47,12 +47,12 @@ clang-format -i <file>   # Uses .clang-format (Zephyr-aligned LLVM, 8-space inde
 
 - **Lua 5.5.0 core** — Git submodule (`lua/`) from `github.com/lua/lua` at tag `v5.5.0`
 - **Zephyr integration** (`src/lua_zephyr/`):
-  - `utils.c` — Custom `sys_heap` allocator, kernel API bindings (`zephyr.msleep`, `zephyr.printk`, `zephyr.log_*`)
-  - `lua_zbus.c` — zbus channel/observer Lua bindings (pub, read, wait_msg)
-  - `lua_msg_descr.c` — Descriptor-based Lua↔C struct conversion (helper library)
-  - `lua_repl.c` — Interactive Lua shell (enabled via `CONFIG_LUA_REPL`)
-  - `lua_fs.c` — Filesystem support: `dofile`, `loadfile`, `list`, `write_file` (enabled via `CONFIG_LUA_FS`)
-  - `lua_fs_shell.c` — Shell commands for managing Lua scripts on FS: list, cat, write, delete, run, stat (enabled via `CONFIG_LUA_FS_SHELL`)
+  - `luaz_utils.c` — Custom `sys_heap` allocator, kernel API bindings (`zephyr.msleep`, `zephyr.printk`, `zephyr.log_*`)
+  - `luaz_zbus.c` — zbus channel/observer Lua bindings (pub, read, wait_msg)
+  - `luaz_msg_descr.c` — Descriptor-based Lua↔C struct conversion (helper library)
+  - `luaz_repl.c` — Interactive Lua shell (enabled via `CONFIG_LUA_REPL`)
+  - `luaz_fs.c` — Filesystem support: `dofile`, `loadfile`, `list`, `write_file` (enabled via `CONFIG_LUA_FS`)
+  - `luaz_fs_shell.c` — Shell commands for managing Lua scripts on FS: list, cat, write, delete, run, stat (enabled via `CONFIG_LUA_FS_SHELL`)
 
 ### CMake Functions (`lua.cmake`)
 
@@ -73,6 +73,7 @@ Each `add_lua_thread()` call (and its bytecode/fs variants) generates a Zephyr t
 - A setup hook (`<script>_lua_setup`) for registering libraries
 
 **Variants:**
+
 - **Source thread** (`add_lua_thread`) — script embedded as C string, parsed at startup
 - **Bytecode thread** (`add_lua_bytecode_thread`) — script precompiled, parser can be stripped
 - **Filesystem thread** (`add_lua_fs_thread`) — script loaded from FS path at runtime
@@ -84,9 +85,9 @@ Weakly-defined conversion hooks allow applications to customize message serializ
 - `msg_struct_to_lua_table(L, chan, message)` — C struct → Lua table
 - `lua_table_to_msg_struct(L, chan, message)` — Lua table → C struct
 
-The descriptor system (`lua_msg_descr.h`) stores descriptors as zbus channel `user_data` for O(1) lookup. Pass `LUA_ZBUS_MSG_DESCR(type, fields)` as the `_user_data` argument to `ZBUS_CHAN_DEFINE` — it creates a compound-literal descriptor inline. The `__weak` defaults in `lua_zbus.c` check `zbus_chan_user_data()` and call `lua_msg_descr_to_table`/`lua_msg_descr_from_table` automatically. Apps can still provide strong overrides. Nested struct support via `LUA_MSG_TYPE_OBJECT` / `LUA_MSG_FIELD_OBJECT`.
+The descriptor system (`luaz_msg_descr.h`) stores descriptors as zbus channel `user_data` for O(1) lookup. Pass `LUA_ZBUS_MSG_DESCR(type, fields)` as the `_user_data` argument to `ZBUS_CHAN_DEFINE` — it creates a compound-literal descriptor inline. The `__weak` defaults in `luaz_zbus.c` check `zbus_chan_user_data()` and call `lua_msg_descr_to_table`/`lua_msg_descr_from_table` automatically. Apps can still provide strong overrides. Nested struct support via `LUA_MSG_TYPE_OBJECT` / `LUA_MSG_FIELD_OBJECT`.
 
-### nanopb Descriptor Bridge (`lua_msg_descr_pb.h`)
+### nanopb Descriptor Bridge (`luaz_msg_descr_pb.h`)
 
 `LUA_PB_DESCR_DEFINE(_name)` auto-generates `lua_msg_field_descr` arrays from nanopb `FIELDLIST` X-macros, making `.proto` the single source of truth.
 
@@ -108,20 +109,20 @@ Deeper nesting (3+ levels) works the same way — always define leaf types first
 
 ### Kconfig Options
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `CONFIG_LUA` | — | Enable Lua support (selects zbus) |
-| `CONFIG_LUA_REPL` | `n` | Enable interactive Lua shell |
-| `CONFIG_LUA_REPL_LINE_SIZE` | `256` | Maximum REPL input line length |
-| `CONFIG_LUA_THREAD_STACK_SIZE` | `2048` | Stack size for generated Lua threads |
-| `CONFIG_LUA_THREAD_HEAP_SIZE` | `32768` | Heap size for generated Lua threads |
-| `CONFIG_LUA_THREAD_PRIORITY` | `7` | Priority of generated Lua threads |
-| `CONFIG_LUA_PRECOMPILE` | `n` | Precompile scripts to bytecode at build time |
-| `CONFIG_LUA_PRECOMPILE_ONLY` | `n` | Exclude Lua parser (~15-20 KB savings) |
-| `CONFIG_LUA_FS` | `n` | Enable filesystem support |
-| `CONFIG_LUA_FS_MOUNT_POINT` | `"/lfs"` | Filesystem mount point prefix |
-| `CONFIG_LUA_FS_MAX_FILE_SIZE` | `4096` | Maximum script file size (bytes) |
-| `CONFIG_LUA_FS_SHELL` | `n` | Enable `lua_fs` shell commands |
+| Option                         | Default  | Description                                  |
+| ------------------------------ | -------- | -------------------------------------------- |
+| `CONFIG_LUA`                   | —        | Enable Lua support (selects zbus)            |
+| `CONFIG_LUA_REPL`              | `n`      | Enable interactive Lua shell                 |
+| `CONFIG_LUA_REPL_LINE_SIZE`    | `256`    | Maximum REPL input line length               |
+| `CONFIG_LUA_THREAD_STACK_SIZE` | `2048`   | Stack size for generated Lua threads         |
+| `CONFIG_LUA_THREAD_HEAP_SIZE`  | `32768`  | Heap size for generated Lua threads          |
+| `CONFIG_LUA_THREAD_PRIORITY`   | `7`      | Priority of generated Lua threads            |
+| `CONFIG_LUA_PRECOMPILE`        | `n`      | Precompile scripts to bytecode at build time |
+| `CONFIG_LUA_PRECOMPILE_ONLY`   | `n`      | Exclude Lua parser (~15-20 KB savings)       |
+| `CONFIG_LUA_FS`                | `n`      | Enable filesystem support                    |
+| `CONFIG_LUA_FS_MOUNT_POINT`    | `"/lfs"` | Filesystem mount point prefix                |
+| `CONFIG_LUA_FS_MAX_FILE_SIZE`  | `4096`   | Maximum script file size (bytes)             |
+| `CONFIG_LUA_FS_SHELL`          | `n`      | Enable `lua_fs` shell commands               |
 
 ## Code Style
 

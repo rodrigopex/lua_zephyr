@@ -1,5 +1,5 @@
 /**
- * @file utils.c
+ * @file luaz_utils.c
  * @brief Lua-Zephyr core: allocator, kernel API wrappers, and POSIX stubs.
  *
  * Implements the sys_heap-backed Lua allocator and the `zephyr` Lua library
@@ -7,7 +7,7 @@
  */
 
 #include "lua.h"
-#include "lua_zephyr/utils.h"
+#include "lua_zephyr/luaz_utils.h"
 
 #include <lauxlib.h>
 #include <lualib.h>

@@ -1,5 +1,5 @@
 /**
- * @file lua_msg_descr.h
+ * @file luaz_msg_descr.h
  * @brief Descriptor-based Lua <-> C struct conversion for zbus messages.
  *
  * Provides a declarative way to define how zbus message structs map to Lua
@@ -7,8 +7,8 @@
  * Pass LUA_ZBUS_MSG_DESCR(type, fields) as user_data to ZBUS_CHAN_DEFINE.
  */
 
-#ifndef LUA_MSG_DESCR_H
-#define LUA_MSG_DESCR_H
+#ifndef LUAZ_MSG_DESCR_H
+#define LUAZ_MSG_DESCR_H
 
 #include <lua.h>
 #include <stddef.h>
@@ -153,4 +153,4 @@ void lua_msg_descr_to_table(lua_State *L, const struct lua_msg_field_descr *fiel
 void lua_msg_descr_from_table(lua_State *L, const struct lua_msg_field_descr *fields,
 			      size_t field_count, void *base, int table_idx);
 
-#endif /* LUA_MSG_DESCR_H */
+#endif /* LUAZ_MSG_DESCR_H */

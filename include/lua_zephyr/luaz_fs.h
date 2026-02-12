@@ -1,5 +1,5 @@
 /**
- * @file lua_fs.h
+ * @file luaz_fs.h
  * @brief Lua filesystem support: script loading and Lua library.
  *
  * Provides functions to load and execute Lua scripts from any mounted
@@ -8,8 +8,8 @@
  * the filesystem before using these functions.
  */
 
-#ifndef _LUA_ZEPHYR_LUA_FS_H
-#define _LUA_ZEPHYR_LUA_FS_H
+#ifndef _LUAZ_FS_H
+#define _LUAZ_FS_H
 
 #include <lua.h>
 
@@ -62,4 +62,4 @@ int lua_fs_write_file(const char *path, const char *data, size_t len);
  */
 int luaopen_fs(lua_State *L);
 
-#endif /* _LUA_ZEPHYR_LUA_FS_H */
+#endif /* _LUAZ_FS_H */
