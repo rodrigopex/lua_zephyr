@@ -3,6 +3,7 @@ sample:
 tests:
   sample.lua_zephyr.heavy:
     harness: console
+    timeout: 300
     extra_configs:
       - CONFIG_QEMU_ICOUNT=y
       - CONFIG_SHELL=n
@@ -15,3 +16,4 @@ tests:
     tags: lua_zephyr
     integration_platforms:
       - qemu_x86
+      - mps2/an385

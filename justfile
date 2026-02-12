@@ -19,7 +19,7 @@ c_build_dir := "-d " + build_dir
 
 # Target board for west build
 
-board := "qemu_cortex_m3"
+board := "mps2/an385"
 c_board := "-b " + board
 
 # Application source directory
