@@ -6,7 +6,7 @@
  * functions used by lua_zbus.c via the channel user_data descriptor lookup.
  */
 
-#include <lua_zephyr/luaz_msg_descr.h>
+#include <luaz_msg_descr.h>
 #include <lauxlib.h>
 #include <string.h>
 #include <zephyr/kernel.h>

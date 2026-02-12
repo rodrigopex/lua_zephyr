@@ -17,8 +17,8 @@
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
-#include <lua_zephyr/luaz_fs.h>
-#include <lua_zephyr/luaz_utils.h>
+#include <luaz_fs.h>
+#include <luaz_utils.h>
 #include <zephyr/kernel.h>
 #include <zephyr/fs/fs.h>
 #include <zephyr/logging/log.h>

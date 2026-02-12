@@ -65,7 +65,7 @@ Each `add_lua_thread("src/my_script.lua")` call expects a setup hook named
 
 ```c
 #include <lua.h>
-#include <lua_zephyr/luaz_utils.h>
+#include <luaz_utils.h>
 
 int my_script_lua_setup(lua_State *L)
 {

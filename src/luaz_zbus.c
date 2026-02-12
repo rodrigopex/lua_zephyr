@@ -11,9 +11,9 @@
 #include <lualib.h>
 #include <sys/times.h>
 #include <zephyr/zbus/zbus.h>
-#include <lua_zephyr/luaz_utils.h>
-#include <lua_zephyr/luaz_zbus.h>
-#include <lua_zephyr/luaz_msg_descr.h>
+#include <luaz_utils.h>
+#include <luaz_zbus.h>
+#include <luaz_msg_descr.h>
 #include <zephyr/kernel.h>
 #include <zephyr/init.h>
 

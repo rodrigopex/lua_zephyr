@@ -31,15 +31,15 @@ if(CONFIG_LUA)
     endif()
 
     zephyr_library_sources("${SRC}"
-                           "${SRC_DIR}/lua_zephyr/luaz_utils.c"
-                           "${SRC_DIR}/lua_zephyr/luaz_zbus.c"
-                           "${SRC_DIR}/lua_zephyr/luaz_msg_descr.c"
-                           "${SRC_DIR}/lua_zephyr/luaz_repl.c"
+                           "${SRC_DIR}/luaz_utils.c"
+                           "${SRC_DIR}/luaz_zbus.c"
+                           "${SRC_DIR}/luaz_msg_descr.c"
+                           "${SRC_DIR}/luaz_repl.c"
     )
 
-    zephyr_library_sources_ifdef(CONFIG_LUA_PRECOMPILE_ONLY "${SRC_DIR}/lua_zephyr/luaz_parser_stubs.c")
-    zephyr_library_sources_ifdef(CONFIG_LUA_FS "${SRC_DIR}/lua_zephyr/luaz_fs.c")
-    zephyr_library_sources_ifdef(CONFIG_LUA_FS_SHELL "${SRC_DIR}/lua_zephyr/luaz_fs_shell.c")
+    zephyr_library_sources_ifdef(CONFIG_LUA_PRECOMPILE_ONLY "${SRC_DIR}/luaz_parser_stubs.c")
+    zephyr_library_sources_ifdef(CONFIG_LUA_FS "${SRC_DIR}/luaz_fs.c")
+    zephyr_library_sources_ifdef(CONFIG_LUA_FS_SHELL "${SRC_DIR}/luaz_fs_shell.c")
 
     # Add the helper functions to be used inside the user CMakeLists.txt. For
     # now, only `add_lua_file` exists.
