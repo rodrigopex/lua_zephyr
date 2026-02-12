@@ -10,7 +10,8 @@ if(CONFIG_LUA_PRECOMPILE)
 
     if(NOT EXISTS "${LUAC_HOST}")
         file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/host_tools")
-        file(GLOB LUAC_HOST_SRCS "${LUA_MOD_DIR}/src/l*.c")
+        file(GLOB LUAC_HOST_SRCS "${LUA_MOD_DIR}/lua/l*.c")
+        list(REMOVE_ITEM LUAC_HOST_SRCS "${LUA_MOD_DIR}/lua/lua.c" "${LUA_MOD_DIR}/lua/ltests.c")
         list(APPEND LUAC_HOST_SRCS "${LUA_MOD_DIR}/host_tools/luac.c")
 
         message(STATUS "Building host luac: ${LUAC_HOST}")
@@ -18,7 +19,8 @@ if(CONFIG_LUA_PRECOMPILE)
             COMMAND ${HOST_CC}
                 ${LUAC_HOST_SRCS}
                 -I${LUA_MOD_DIR}/include
-                -O2 -DLUA_USE_POSIX -lm
+                -I${LUA_MOD_DIR}/lua
+                -O2 -DLUA_USE_POSIX -DLUA_32BITS -lm
                 -o ${LUAC_HOST}
             RESULT_VARIABLE LUAC_BUILD_RESULT
             ERROR_VARIABLE LUAC_BUILD_ERROR

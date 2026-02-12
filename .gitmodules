@@ -1,0 +1,3 @@
+[submodule "lua_zephyr/lua"]
+	path = lua_zephyr/lua
+	url = https://github.com/lua/lua.git

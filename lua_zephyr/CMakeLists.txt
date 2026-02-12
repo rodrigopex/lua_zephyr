@@ -1,5 +1,6 @@
 if(CONFIG_LUA)
     set(LUA_DIR "${ZEPHYR_CURRENT_MODULE_DIR}/")
+    set(LUA_CORE_DIR "${LUA_DIR}/lua/")
     set(INC_DIR "${LUA_DIR}/include/")
     set(SRC_DIR "${LUA_DIR}/src/")
     set(PARENT_SRC_DIR "${LUA_DIR}/../../zephyr")
@@ -10,18 +11,23 @@ if(CONFIG_LUA)
 
     zephyr_include_directories("${PARENT_SRC_DIR}/include/"
                              "${INC_DIR}/"
+                             "${LUA_CORE_DIR}/"
     )
+
+    zephyr_compile_definitions(LUA_32BITS)
 
     zephyr_library()
 
-    # The lua files
-    file(GLOB SRC "${SRC_DIR}/*.c")
+    # Lua core sources from the git submodule
+    file(GLOB SRC "${LUA_CORE_DIR}/l*.c")
+    # Exclude standalone interpreter and internal test harness from the build
+    list(REMOVE_ITEM SRC "${LUA_CORE_DIR}/lua.c" "${LUA_CORE_DIR}/ltests.c")
 
     if(CONFIG_LUA_PRECOMPILE_ONLY)
         list(REMOVE_ITEM SRC
-            "${SRC_DIR}/lparser.c"
-            "${SRC_DIR}/llex.c"
-            "${SRC_DIR}/lcode.c"
+            "${LUA_CORE_DIR}/lparser.c"
+            "${LUA_CORE_DIR}/llex.c"
+            "${LUA_CORE_DIR}/lcode.c"
         )
     endif()
 
