@@ -66,6 +66,15 @@ config LUA_PRECOMPILE_ONLY
       Removes lparser.c, llex.c, and lcode.c from the target binary.
       Saves ~15-20KB flash. All scripts must be pre-compiled.
 
+config LUA_EXTRA_OPTIMIZATIONS
+    bool "Extra heap optimizations for bytecode-only builds [EXPERIMENTAL]"
+    depends on LUA_PRECOMPILE_ONLY
+    select EXPERIMENTAL
+    help
+      Reduce Lua internal data structure sizes for lower heap usage.
+      Saves ~636 bytes per lua_newstate on 32-bit targets by reducing
+      the string table initial size (128->64) and string cache (53x2->11x1).
+
 config LUA_FS
     bool "Lua filesystem support"
     depends on LUA

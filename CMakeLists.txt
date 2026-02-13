@@ -30,6 +30,14 @@ if(CONFIG_LUA)
         )
     endif()
 
+    if(CONFIG_LUA_EXTRA_OPTIMIZATIONS)
+        zephyr_compile_definitions(
+            MINSTRTABSIZE=64
+            STRCACHE_N=11
+            STRCACHE_M=1
+        )
+    endif()
+
     zephyr_library_sources("${SRC}"
                            "${SRC_DIR}/luaz_utils.c"
                            "${SRC_DIR}/luaz_zbus.c"
