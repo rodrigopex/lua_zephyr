@@ -18,10 +18,10 @@ err = zbus.chan_sensor_config:pub(sensor_cfg, 200)
 if err == 0 then
     err, msg = zbus.chan_sensor_config:read(200)
     if msg then
-        zephyr.printk("Nested: sensor_id=" .. msg.sensor_id
-            .. " offset.x=" .. msg.offset.x
-            .. " offset.y=" .. msg.offset.y
-            .. " offset.z=" .. msg.offset.z)
+        zephyr.printk("Sensor_config={sensor_id=" .. msg.sensor_id
+            .. " offset={x=" .. msg.offset.x
+            .. ", y=" .. msg.offset.y
+            .. ", z=" .. msg.offset.z .. "}}")
     end
 end
 
@@ -36,7 +36,7 @@ local getrandom = function(seed)
 end
 
 --- Accelerometer data template (mass and xyz components).
-local acc_data = { m = 10, x = 0, y = 0, z = 0 }
+local acc_data = { x = 0, y = 0, z = 0 }
 
 local i = 1
 
