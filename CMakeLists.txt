@@ -5,9 +5,6 @@ if(CONFIG_LUA)
     set(SRC_DIR "${LUA_DIR}/src/")
     set(PARENT_SRC_DIR "${LUA_DIR}/../zephyr")
 
-    message(WARNING "Lua ENABLED.")
-    message(WARNING " *** Lua dir: ${LUA_DIR}")
-
     zephyr_include_directories("${PARENT_SRC_DIR}/include/"
                              "${INC_DIR}/"
                              "${LUA_CORE_DIR}/"
