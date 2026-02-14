@@ -27,6 +27,10 @@ if(CONFIG_LUA)
         )
     endif()
 
+    # Reduce Lua's internal heap usage for constrained environments:
+    #   MINSTRTABSIZE=64  — shrink the initial string table (default 128)
+    #   STRCACHE_N=11     — reduce string cache rows (default 53)
+    #   STRCACHE_M=1      — single entry per cache row (default 2)
     if(CONFIG_LUA_EXTRA_OPTIMIZATIONS)
         zephyr_compile_definitions(
             MINSTRTABSIZE=64
@@ -42,9 +46,11 @@ if(CONFIG_LUA)
                            "${SRC_DIR}/luaz_repl.c"
     )
 
-    zephyr_library_sources_ifdef(CONFIG_LUA_PRECOMPILE_ONLY "${SRC_DIR}/luaz_parser_stubs.c")
+    zephyr_library_sources_ifdef(CONFIG_LUA_PRECOMPILE_ONLY
+        "${SRC_DIR}/luaz_parser_stubs.c")
     zephyr_library_sources_ifdef(CONFIG_LUA_FS "${SRC_DIR}/luaz_fs.c")
-    zephyr_library_sources_ifdef(CONFIG_LUA_FS_SHELL "${SRC_DIR}/luaz_fs_shell.c")
+    zephyr_library_sources_ifdef(CONFIG_LUA_FS_SHELL
+        "${SRC_DIR}/luaz_fs_shell.c")
 
     # Add the helper functions to be used inside the user CMakeLists.txt. For
     # now, only `add_lua_file` exists.
