@@ -29,14 +29,20 @@ if(CONFIG_LUA_PRECOMPILE)
     endif()
 endif()
 
+# Path to the unified Lua generator script used by all add_lua_* functions.
+set(LUA_GENERATE_SCRIPT "${CMAKE_CURRENT_LIST_DIR}/scripts/luaz_gen.py"
+    CACHE INTERNAL "Path to luaz_gen.py")
+
 # add_lua_file(FILE_NAME_PATH)
 #
 # Embed a .lua script as a C const string header.
 #
-# Runs lua_cat.py to convert the Lua source into a C-escaped string,
-# then configures lua_template.h.in to produce <name>_lua_script.h.
+# Runs lua_generate.py in source mode to produce <name>_lua_script.h.
 # The generated header is placed under ${CMAKE_CURRENT_BINARY_DIR}/lua
 # and made available via include_directories.
+#
+# The .lua source file is tracked as a dependency so that modifying it
+# triggers regeneration on incremental builds.
 #
 # Arguments:
 #   FILE_NAME_PATH - Path to the .lua file (relative to project source dir).
@@ -44,16 +50,27 @@ function(add_lua_file FILE_NAME_PATH)
     cmake_path(GET FILE_NAME_PATH FILENAME FILE_NAME)
     cmake_path(REMOVE_EXTENSION FILE_NAME OUTPUT_VARIABLE FILE_NAME)
 
-    execute_process(COMMAND ${PYTHON_EXECUTABLE}
-    "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/scripts/lua_cat.py" ${FILE_NAME_PATH}
-    OUTPUT_VARIABLE LUA_CONTENT WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMAND_ERROR_IS_FATAL ANY
-  )
+    set(LUA_FILE "${CMAKE_CURRENT_SOURCE_DIR}/${FILE_NAME_PATH}")
+    set(LUA_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/lua")
+    set(LUA_OUTPUT "${LUA_OUTPUT_DIR}/${FILE_NAME}_lua_script.h")
+    set(LUA_TEMPLATE "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/templates/lua_template.h.in")
 
-    configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/templates/lua_template.h.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/lua/${FILE_NAME}_lua_script.h")
+    add_custom_command(
+        OUTPUT "${LUA_OUTPUT}"
+        COMMAND ${PYTHON_EXECUTABLE} "${LUA_GENERATE_SCRIPT}"
+            --mode source
+            --template "${LUA_TEMPLATE}"
+            --output "${LUA_OUTPUT}"
+            --name "${FILE_NAME}"
+            "${LUA_FILE}"
+        DEPENDS "${LUA_FILE}" "${LUA_TEMPLATE}"
+        COMMENT "Generating ${FILE_NAME}_lua_script.h from ${FILE_NAME}.lua"
+    )
 
-    include_directories("${CMAKE_BINARY_DIR}/lua")
+    add_custom_target(${FILE_NAME}_lua_header DEPENDS "${LUA_OUTPUT}")
+    add_dependencies(app ${FILE_NAME}_lua_header)
+
+    include_directories("${LUA_OUTPUT_DIR}")
 endfunction()
 
 
@@ -61,13 +78,14 @@ endfunction()
 #
 # Generate a complete Lua thread (Zephyr thread + embedded script).
 #
-# Runs lua_cat.py to convert the Lua source, then configures
-# lua_thread.c.in to produce <name>_lua_thread.c containing:
+# Runs lua_generate.py in source mode to produce <name>_lua_thread.c
+# containing:
 #   - A dedicated sys_heap and stack
 #   - A weak _lua_setup hook for pre-script initialization
 #   - A K_THREAD_DEFINE that runs the embedded Lua script
 #
 # The generated .c file is automatically added to the `app` target.
+# The .lua source file is tracked as a dependency for incremental builds.
 #
 # Arguments:
 #   FILE_NAME_PATH - Path to the .lua file (relative to project source dir).
@@ -75,20 +93,26 @@ function(add_lua_thread FILE_NAME_PATH)
     cmake_path(GET FILE_NAME_PATH FILENAME FILE_NAME)
     cmake_path(REMOVE_EXTENSION FILE_NAME OUTPUT_VARIABLE FILE_NAME)
 
-    execute_process(COMMAND ${PYTHON_EXECUTABLE}
-    "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/scripts/lua_cat.py" ${FILE_NAME_PATH}
-    OUTPUT_VARIABLE LUA_CONTENT WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMAND_ERROR_IS_FATAL ANY
-  )
+    set(LUA_FILE "${CMAKE_CURRENT_SOURCE_DIR}/${FILE_NAME_PATH}")
+    set(LUA_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/lua")
+    set(LUA_OUTPUT "${LUA_OUTPUT_DIR}/${FILE_NAME}_lua_thread.c")
+    set(LUA_TEMPLATE "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/templates/lua_thread.c.in")
 
-    configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/templates/lua_thread.c.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/lua/${FILE_NAME}_lua_thread.c")
-
-    include_directories("${CMAKE_BINARY_DIR}/lua")
-
-    target_sources(app PRIVATE
-        "${CMAKE_CURRENT_BINARY_DIR}/lua/${FILE_NAME}_lua_thread.c"
+    add_custom_command(
+        OUTPUT "${LUA_OUTPUT}"
+        COMMAND ${PYTHON_EXECUTABLE} "${LUA_GENERATE_SCRIPT}"
+            --mode source
+            --template "${LUA_TEMPLATE}"
+            --output "${LUA_OUTPUT}"
+            --name "${FILE_NAME}"
+            "${LUA_FILE}"
+        DEPENDS "${LUA_FILE}" "${LUA_TEMPLATE}"
+        COMMENT "Generating ${FILE_NAME}_lua_thread.c from ${FILE_NAME}.lua"
     )
+
+    include_directories("${LUA_OUTPUT_DIR}")
+
+    target_sources(app PRIVATE "${LUA_OUTPUT}")
 endfunction()
 
 
@@ -96,10 +120,11 @@ endfunction()
 #
 # Embed a pre-compiled Lua bytecode as a C uint8_t array header.
 #
-# Runs lua_compile.py (which invokes the host-built luac -s) to produce
-# stripped bytecode, then configures lua_bytecode_template.h.in to produce
+# Runs lua_generate.py in bytecode mode (which invokes luac -s) to produce
 # <name>_lua_bytecode.h.  The generated header is placed under
 # ${CMAKE_CURRENT_BINARY_DIR}/lua and made available via include_directories.
+#
+# The .lua source file is tracked as a dependency for incremental builds.
 #
 # Requires CONFIG_LUA_PRECOMPILE=y.
 #
@@ -109,22 +134,28 @@ function(add_lua_bytecode_file FILE_NAME_PATH)
     cmake_path(GET FILE_NAME_PATH FILENAME FILE_NAME)
     cmake_path(REMOVE_EXTENSION FILE_NAME OUTPUT_VARIABLE FILE_NAME)
 
-    execute_process(COMMAND ${PYTHON_EXECUTABLE}
-    "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/scripts/lua_compile.py"
-    "${LUAC_HOST}" ${FILE_NAME_PATH}
-    OUTPUT_VARIABLE LUA_COMPILE_OUTPUT WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMAND_ERROR_IS_FATAL ANY
-  )
+    set(LUA_FILE "${CMAKE_CURRENT_SOURCE_DIR}/${FILE_NAME_PATH}")
+    set(LUA_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/lua")
+    set(LUA_OUTPUT "${LUA_OUTPUT_DIR}/${FILE_NAME}_lua_bytecode.h")
+    set(LUA_TEMPLATE "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/templates/lua_bytecode_template.h.in")
 
-    # Parse output: line 1 = byte count, line 2 = hex bytes
-    string(REGEX MATCH "^([0-9]+)\n(.+)$" _match "${LUA_COMPILE_OUTPUT}")
-    set(LUA_BYTECODE_LEN "${CMAKE_MATCH_1}")
-    set(LUA_BYTECODE "${CMAKE_MATCH_2}")
+    add_custom_command(
+        OUTPUT "${LUA_OUTPUT}"
+        COMMAND ${PYTHON_EXECUTABLE} "${LUA_GENERATE_SCRIPT}"
+            --mode bytecode
+            --template "${LUA_TEMPLATE}"
+            --output "${LUA_OUTPUT}"
+            --name "${FILE_NAME}"
+            --luac "${LUAC_HOST}"
+            "${LUA_FILE}"
+        DEPENDS "${LUA_FILE}" "${LUA_TEMPLATE}"
+        COMMENT "Generating ${FILE_NAME}_lua_bytecode.h from ${FILE_NAME}.lua"
+    )
 
-    configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/templates/lua_bytecode_template.h.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/lua/${FILE_NAME}_lua_bytecode.h")
+    add_custom_target(${FILE_NAME}_lua_bytecode_header DEPENDS "${LUA_OUTPUT}")
+    add_dependencies(app ${FILE_NAME}_lua_bytecode_header)
 
-    include_directories("${CMAKE_BINARY_DIR}/lua")
+    include_directories("${LUA_OUTPUT_DIR}")
 endfunction()
 
 
@@ -132,14 +163,14 @@ endfunction()
 #
 # Generate a complete Lua thread loading pre-compiled bytecode.
 #
-# Runs lua_compile.py to produce stripped bytecode, then configures
-# lua_bytecode_thread.c.in to produce <name>_lua_bytecode_thread.c
-# containing:
+# Runs lua_generate.py in bytecode mode to produce
+# <name>_lua_bytecode_thread.c containing:
 #   - A dedicated sys_heap and stack
 #   - A weak _lua_setup hook for pre-script initialization
 #   - A K_THREAD_DEFINE that loads and runs the bytecode via luaL_loadbuffer
 #
 # The generated .c file is automatically added to the `app` target.
+# The .lua source file is tracked as a dependency for incremental builds.
 #
 # Requires CONFIG_LUA_PRECOMPILE=y.
 #
@@ -149,26 +180,27 @@ function(add_lua_bytecode_thread FILE_NAME_PATH)
     cmake_path(GET FILE_NAME_PATH FILENAME FILE_NAME)
     cmake_path(REMOVE_EXTENSION FILE_NAME OUTPUT_VARIABLE FILE_NAME)
 
-    execute_process(COMMAND ${PYTHON_EXECUTABLE}
-    "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/scripts/lua_compile.py"
-    "${LUAC_HOST}" ${FILE_NAME_PATH}
-    OUTPUT_VARIABLE LUA_COMPILE_OUTPUT WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMAND_ERROR_IS_FATAL ANY
-  )
+    set(LUA_FILE "${CMAKE_CURRENT_SOURCE_DIR}/${FILE_NAME_PATH}")
+    set(LUA_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/lua")
+    set(LUA_OUTPUT "${LUA_OUTPUT_DIR}/${FILE_NAME}_lua_bytecode_thread.c")
+    set(LUA_TEMPLATE "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/templates/lua_bytecode_thread.c.in")
 
-    # Parse output: line 1 = byte count, line 2 = hex bytes
-    string(REGEX MATCH "^([0-9]+)\n(.+)$" _match "${LUA_COMPILE_OUTPUT}")
-    set(LUA_BYTECODE_LEN "${CMAKE_MATCH_1}")
-    set(LUA_BYTECODE "${CMAKE_MATCH_2}")
-
-    configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/templates/lua_bytecode_thread.c.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/lua/${FILE_NAME}_lua_bytecode_thread.c")
-
-    include_directories("${CMAKE_BINARY_DIR}/lua")
-
-    target_sources(app PRIVATE
-        "${CMAKE_CURRENT_BINARY_DIR}/lua/${FILE_NAME}_lua_bytecode_thread.c"
+    add_custom_command(
+        OUTPUT "${LUA_OUTPUT}"
+        COMMAND ${PYTHON_EXECUTABLE} "${LUA_GENERATE_SCRIPT}"
+            --mode bytecode
+            --template "${LUA_TEMPLATE}"
+            --output "${LUA_OUTPUT}"
+            --name "${FILE_NAME}"
+            --luac "${LUAC_HOST}"
+            "${LUA_FILE}"
+        DEPENDS "${LUA_FILE}" "${LUA_TEMPLATE}"
+        COMMENT "Generating ${FILE_NAME}_lua_bytecode_thread.c from ${FILE_NAME}.lua"
     )
+
+    include_directories("${LUA_OUTPUT_DIR}")
+
+    target_sources(app PRIVATE "${LUA_OUTPUT}")
 endfunction()
 
 
