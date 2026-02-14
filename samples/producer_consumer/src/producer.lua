@@ -1,9 +1,11 @@
 --- Producer script: demonstrates zbus pub/sub with nested messages and
 --- accelerometer data generation from a Lua thread.
 
-if require then
-    require("zephyr")
-end
+---@class zbus
+---@field chan_version zbus_channel
+---@field chan_sensor_config zbus_channel
+---@field chan_acc_data zbus_channel
+---@field msub_acc_consumed zbus_observer
 
 --- Read and display the system version from the version channel.
 local err, msg = zbus.chan_version:read(500)
@@ -56,13 +58,14 @@ while i < 10 do
     end
 
     --- Wait for the consumer to process the data and send back an ack message.
+    --- (number, number, ack_data_consumed)
     err, _, msg = zbus.msub_acc_consumed:wait_msg(250)
 
     if err ~= 0 then
         zephyr.printk("error: " .. err)
         break
     else
-        if msg.count then
+        if msg and msg.count then
             zephyr.printk("--> Lua received ack " .. msg.count)
             i = msg.count
         end
