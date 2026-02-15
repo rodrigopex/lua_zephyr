@@ -3,8 +3,8 @@
  * @brief Lua bindings for Zephyr zbus: publish, read, wait, and serialization.
  *
  * Implements channel and observer userdata types with metatables so Lua scripts
- * can call :pub(), :read(), and :wait_msg().  Weak conversion hooks delegate to
- * the descriptor system in lua_msg_descr when channel user_data is set.
+ * can call :pub(), :read(), and :wait_msg().  Conversion between C structs and
+ * Lua tables is handled via the descriptor system in lua_msg_descr.
  */
 
 #include <lauxlib.h>
@@ -82,17 +82,16 @@ static const struct zbus_channel **check_zbus_channel(lua_State *L, int idx)
 }
 
 /**
- * @brief Convert a C message struct to a Lua table (weak default).
+ * @brief Convert a C message struct to a Lua table.
  *
  * Uses the descriptor stored in zbus_chan_user_data if available.
- * Applications may provide a strong override for custom serialization.
  *
  * @param L        Lua state.
  * @param chan     The zbus channel the message belongs to.
  * @param message  Pointer to the raw message buffer.
  * @return 1 (table or nil pushed onto the Lua stack).
  */
-int __weak msg_struct_to_lua_table(lua_State *L, const struct zbus_channel *chan, void *message)
+static int msg_struct_to_lua_table(lua_State *L, const struct zbus_channel *chan, void *message)
 {
 	const struct lua_msg_descr *descr = zbus_chan_user_data(chan);
 
@@ -105,17 +104,16 @@ int __weak msg_struct_to_lua_table(lua_State *L, const struct zbus_channel *chan
 }
 
 /**
- * @brief Convert a Lua table to a C message struct (weak default).
+ * @brief Convert a Lua table to a C message struct.
  *
  * Uses the descriptor stored in zbus_chan_user_data if available.
- * Applications may provide a strong override for custom deserialization.
  *
  * @param L        Lua state.
  * @param chan     The zbus channel the message belongs to.
  * @param message  Pointer to the output message buffer.
  * @return Message size on success, 0 if no descriptor is available.
  */
-size_t __weak lua_table_to_msg_struct(lua_State *L, const struct zbus_channel *chan, void *message)
+static size_t lua_table_to_msg_struct(lua_State *L, const struct zbus_channel *chan, void *message)
 {
 	const struct lua_msg_descr *descr = zbus_chan_user_data(chan);
 

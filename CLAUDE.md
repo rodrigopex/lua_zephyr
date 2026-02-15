@@ -80,12 +80,7 @@ Each `add_lua_thread()` call (and its bytecode/fs variants) generates a Zephyr t
 
 ### zbus Integration
 
-Weakly-defined conversion hooks allow applications to customize message serialization:
-
-- `msg_struct_to_lua_table(L, chan, message)` — C struct → Lua table
-- `lua_table_to_msg_struct(L, chan, message)` — Lua table → C struct
-
-The descriptor system (`luaz_msg_descr.h`) stores descriptors as zbus channel `user_data` for O(1) lookup. Pass `LUA_ZBUS_MSG_DESCR(type, fields)` as the `_user_data` argument to `ZBUS_CHAN_DEFINE` — it creates a compound-literal descriptor inline. The `__weak` defaults in `luaz_zbus.c` check `zbus_chan_user_data()` and call `lua_msg_descr_to_table`/`lua_msg_descr_from_table` automatically. Apps can still provide strong overrides. Nested struct support via `LUA_MSG_TYPE_OBJECT` / `LUA_MSG_FIELD_OBJECT`.
+The descriptor system (`luaz_msg_descr.h`) handles Lua table ↔ C struct conversion for zbus messages. Descriptors are stored as zbus channel `user_data` for O(1) lookup. Pass `LUA_ZBUS_MSG_DESCR(type, fields)` as the `_user_data` argument to `ZBUS_CHAN_DEFINE` — it creates a compound-literal descriptor inline. The internal conversion functions in `luaz_zbus.c` check `zbus_chan_user_data()` and call `lua_msg_descr_to_table`/`lua_msg_descr_from_table` automatically. Nested struct support via `LUA_MSG_TYPE_OBJECT` / `LUA_MSG_FIELD_OBJECT`.
 
 ### nanopb Descriptor Bridge (`luaz_msg_descr_pb.h`)
 
