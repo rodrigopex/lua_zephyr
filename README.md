@@ -160,14 +160,9 @@ There are three thread flavours:
 
 Scripts interact with the rest of the system exclusively through
 [zbus](https://docs.zephyrproject.org/latest/services/zbus/index.html)
-channels. The module provides weakly-defined conversion hooks:
-
-- `msg_struct_to_lua_table(L, chan, message)` — C struct → Lua table
-- `lua_table_to_msg_struct(L, chan, message)` — Lua table → C struct
-
-The default implementations look up **message descriptors** stored in `zbus_chan_user_data()`
-and convert automatically — see [Message Descriptors](#message-descriptors) below.
-Applications can override these hooks with strong definitions for custom serialization.
+channels. Conversion between Lua tables and C structs is handled automatically
+via **message descriptors** stored in `zbus_chan_user_data()` — see
+[Message Descriptors](#message-descriptors) below.
 
 ### Module structure
 
@@ -245,8 +240,7 @@ filesystem-backed versions, so scripts can use them transparently.
 
 The descriptor system provides **automatic Lua table ↔ C struct conversion**
 for zbus messages. Descriptors are stored as zbus channel `user_data` for O(1)
-lookup — the default `__weak` conversion hooks in `luaz_zbus.c` use them
-automatically.
+lookup — the conversion functions in `luaz_zbus.c` use them automatically.
 
 ### Manual descriptors
 
