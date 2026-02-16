@@ -24,7 +24,7 @@
  *
  * @param _chan  zbus channel variable (unquoted).
  */
-#define LUA_ZBUS_CHAN_DECLARE(_chan) lua_zbus_chan_declare(L, __REF(_chan), #_chan)
+#define LUA_REQUIRE_ZBUS_CHAN(_chan) lua_zbus_chan_declare(L, __REF(_chan), #_chan)
 
 /**
  * @brief Register a zbus observer as a named field in the Lua `zbus` table.
@@ -33,7 +33,7 @@
  *
  * @param _obs  zbus observer variable (unquoted).
  */
-#define LUA_ZBUS_OBS_DECLARE(_obs) lua_zbus_obs_declare(L, __REF(_obs), #_obs)
+#define LUA_REQUIRE_ZBUS_OBS(_obs) lua_zbus_obs_declare(L, __REF(_obs), #_obs)
 
 /**
  * @brief Push a zbus channel userdata into the Lua `zbus` global table.

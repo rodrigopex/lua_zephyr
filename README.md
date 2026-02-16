@@ -215,7 +215,7 @@ Loaded with `LUA_REQUIRE(zephyr)`.
 ### `zbus` library
 
 Loaded with `LUA_REQUIRE(zbus)`. Channels and observers are registered in the
-setup hook with `LUA_ZBUS_CHAN_DECLARE` / `LUA_ZBUS_OBS_DECLARE`.
+setup hook with `LUA_REQUIRE_ZBUS_CHAN` / `LUA_REQUIRE_ZBUS_OBS`.
 
 | Method                        | Description                                               |
 | ----------------------------- | --------------------------------------------------------- |

@@ -26,10 +26,10 @@ int producer_lua_setup(lua_State *L)
 	LUA_REQUIRE(zephyr);
 	LUA_REQUIRE(zbus);
 
-	LUA_ZBUS_CHAN_DECLARE(chan_acc_data);
-	LUA_ZBUS_CHAN_DECLARE(chan_acc_data_consumed);
-	LUA_ZBUS_CHAN_DECLARE(chan_version);
-	LUA_ZBUS_CHAN_DECLARE(chan_sensor_config);
-	LUA_ZBUS_OBS_DECLARE(msub_acc_consumed);
+	LUA_REQUIRE_ZBUS_CHAN(chan_acc_data);
+	LUA_REQUIRE_ZBUS_CHAN(chan_acc_data_consumed);
+	LUA_REQUIRE_ZBUS_CHAN(chan_version);
+	LUA_REQUIRE_ZBUS_CHAN(chan_sensor_config);
+	LUA_REQUIRE_ZBUS_OBS(msub_acc_consumed);
 	return 0;
 }

@@ -28,7 +28,7 @@ function zephyr.log_dbg(message) end
 ---@param message string # Message to log.
 function zephyr.log_err(message) end
 
---- zbus channel userdata (registered via LUA_ZBUS_CHAN_DECLARE).
+--- zbus channel userdata (registered via LUA_REQUIRE_ZBUS_CHAN).
 ---@class zbus_channel
 local zbus_channel = {}
 
@@ -44,7 +44,7 @@ function zbus_channel:pub(data, timeout_ms) end
 ---@return table|nil data # Message table, or nil on error.
 function zbus_channel:read(timeout_ms) end
 
---- zbus observer userdata (registered via LUA_ZBUS_OBS_DECLARE).
+--- zbus observer userdata (registered via LUA_REQUIRE_ZBUS_OBS).
 ---@class zbus_observer
 local zbus_observer = {}
 
