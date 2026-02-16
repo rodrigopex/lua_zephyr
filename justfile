@@ -69,6 +69,11 @@ test:
     rm -rf /tmp/lua_tests
     west twister -p mps2/an385 -T samples -O /tmp/lua_tests
 
+# Run test suite on a physical device
+test-device board serial sample="":
+    rm -rf /tmp/lua_tests
+    west twister -T samples/{{ sample }} -p {{ board }} --device-testing --device-serial {{ serial }} --inline-logs -O /tmp/lua_tests
+
 # ── Code Quality ─────────────────────────────────────────────────────────────────
 
 # Format project C/H files (excludes core Lua sources)
