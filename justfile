@@ -70,9 +70,9 @@ test:
     west twister -p mps2/an385 -T samples -O /tmp/lua_tests
 
 # Run test suite on a physical device
-test-device board serial sample="":
+test-device sample="":
     rm -rf /tmp/lua_tests
-    west twister -T samples/{{ sample }} -p {{ board }} --device-testing --device-serial {{ serial }} --inline-logs -O /tmp/lua_tests
+    west twister -T samples/{{ sample }} --device-testing --hardware-map hardware_map.yaml --inline-logs -O /tmp/lua_tests
 
 # ── Code Quality ─────────────────────────────────────────────────────────────────
 
