@@ -5,7 +5,8 @@ tests:
     harness: console
     timeout: 300
     extra_configs:
-      - CONFIG_QEMU_ICOUNT=y
+      - platform:mps2/an385:CONFIG_QEMU_ICOUNT=y
+      - platform:qemu_x86:CONFIG_QEMU_ICOUNT=y
       - CONFIG_SHELL=n
     harness_config:
       type: multi_line
