@@ -1,0 +1,6 @@
+- platform: nrf52833dk/nrf52833
+  id: "685037258"
+  product: nRF52833-DK
+  runner: nrfjprog
+  serial: /dev/tty.usbmodem0006850372581
+  connected: true
