@@ -11,7 +11,9 @@
 
 #include <lauxlib.h>
 #include <lualib.h>
+#ifdef CONFIG_LUA_LIB_ZBUS
 #include <luaz_zbus.h>
+#endif
 #include <sys/times.h>
 #include <time.h>
 #include <zephyr/sys/sys_heap.h>
@@ -157,9 +159,11 @@ int luaopen_zephyr(lua_State *L)
 {
 	luaL_newlib(L, zephyr_wrappers);
 
+#ifdef CONFIG_LUA_LIB_ZBUS
 	/* Nest zbus as zephyr.zbus */
 	luaopen_zbus(L);
 	lua_setfield(L, -2, "zbus");
+#endif
 
 #ifdef CONFIG_LUA_FS
 	/* Nest fs as zephyr.fs */
@@ -182,18 +186,30 @@ void luaz_openlibs(lua_State *L)
 	lua_pushcfunction(L, luaopen_zephyr);
 	lua_setfield(L, -2, "zephyr");
 
+#ifdef CONFIG_LUA_LIB_STRING
 	lua_pushcfunction(L, luaopen_string);
 	lua_setfield(L, -2, "string");
+#endif
+#ifdef CONFIG_LUA_LIB_TABLE
 	lua_pushcfunction(L, luaopen_table);
 	lua_setfield(L, -2, "table");
+#endif
+#ifdef CONFIG_LUA_LIB_MATH
 	lua_pushcfunction(L, luaopen_math);
 	lua_setfield(L, -2, "math");
+#endif
+#ifdef CONFIG_LUA_LIB_COROUTINE
 	lua_pushcfunction(L, luaopen_coroutine);
 	lua_setfield(L, -2, "coroutine");
+#endif
+#ifdef CONFIG_LUA_LIB_UTF8
 	lua_pushcfunction(L, luaopen_utf8);
 	lua_setfield(L, -2, "utf8");
+#endif
+#ifdef CONFIG_LUA_LIB_DEBUG
 	lua_pushcfunction(L, luaopen_debug);
 	lua_setfield(L, -2, "debug");
+#endif
 
 	lua_pop(L, 1); /* pop preload table */
 }

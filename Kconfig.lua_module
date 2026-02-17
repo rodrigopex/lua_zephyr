@@ -51,6 +51,64 @@ config LUA_THREAD_PRIORITY
     Note that this is effectively the priority of the Lua thread and
     all will be created with this priority.
 
+config LUA_LIBS_ALL
+    bool "Preload all Lua standard libraries"
+    depends on LUA
+    default y
+    help
+      Preload all standard Lua libraries (string, table, math, coroutine,
+      utf8, debug) and zbus into the Lua state. Disable to select
+      individual libraries and reduce flash usage.
+
+config LUA_LIB_STRING
+    bool "Lua string library"
+    depends on LUA
+    default y if LUA_LIBS_ALL
+    help
+      Preload the Lua string library (string.format, string.sub, etc.).
+
+config LUA_LIB_TABLE
+    bool "Lua table library"
+    depends on LUA
+    default y if LUA_LIBS_ALL
+    help
+      Preload the Lua table library (table.insert, table.sort, etc.).
+
+config LUA_LIB_MATH
+    bool "Lua math library"
+    depends on LUA
+    default y if LUA_LIBS_ALL
+    help
+      Preload the Lua math library (math.sin, math.floor, etc.).
+
+config LUA_LIB_COROUTINE
+    bool "Lua coroutine library"
+    depends on LUA
+    default y if LUA_LIBS_ALL
+    help
+      Preload the Lua coroutine library.
+
+config LUA_LIB_UTF8
+    bool "Lua utf8 library"
+    depends on LUA
+    default y if LUA_LIBS_ALL
+    help
+      Preload the Lua utf8 library.
+
+config LUA_LIB_DEBUG
+    bool "Lua debug library"
+    depends on LUA
+    default y if LUA_LIBS_ALL
+    help
+      Preload the Lua debug library.
+
+config LUA_LIB_ZBUS
+    bool "Lua zbus library"
+    depends on LUA
+    default y if LUA_LIBS_ALL
+    help
+      Include zbus bindings as zephyr.zbus subtable.
+
 config LUA_PRECOMPILE
     bool "Pre-compile Lua scripts to bytecode at build time"
     depends on LUA
