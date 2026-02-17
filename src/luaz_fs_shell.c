@@ -292,9 +292,7 @@ static int cmd_run(const struct shell *sh, size_t argc, char **argv)
 		return -ENOMEM;
 	}
 
-	LUA_REQUIRE(zephyr);
-	LUA_REQUIRE(base);
-	LUA_REQUIRE(fs);
+	luaz_openlibs(L);
 
 	int rc = lua_fs_dofile(L, argv[1]);
 

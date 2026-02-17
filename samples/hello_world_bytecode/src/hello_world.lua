@@ -1,4 +1,4 @@
-local z = zephyr
+local z = require("zephyr")
 
 z.printk("Hello from lua thread")
 z.log_err("This is an error log")

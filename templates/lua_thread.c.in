@@ -59,6 +59,7 @@ static void @FILE_NAME@_lua_thread(void*p1, void*p2, void*p3)
 	sys_heap_init(&lua_heap, heap_mem, CONFIG_LUA_THREAD_HEAP_SIZE);
 
 	lua_State *L = lua_newstate(lua_zephyr_allocator, &lua_heap, 0);
+	luaz_openlibs(L);
 
     int err = @FILE_NAME@_lua_setup(L);
     if(err) {

@@ -11,10 +11,15 @@
 
 #include <lauxlib.h>
 #include <lualib.h>
+#include <luaz_zbus.h>
 #include <sys/times.h>
 #include <time.h>
 #include <zephyr/sys/sys_heap.h>
 #include <zephyr/logging/log.h>
+
+#ifdef CONFIG_LUA_FS
+#include <luaz_fs.h>
+#endif
 
 LOG_MODULE_REGISTER(lua_zephyr, CONFIG_LUA_ZEPHYR_LOG_LEVEL);
 
@@ -147,11 +152,50 @@ static const luaL_Reg zephyr_wrappers[] = {
 	{NULL, NULL} // Sentinel value to mark the end of the array
 };
 
-/** @brief Open the `zephyr` Lua library. Registers all kernel wrappers. */
+/** @brief Open the `zephyr` Lua library. Registers kernel wrappers and nests zbus/fs. */
 int luaopen_zephyr(lua_State *L)
 {
 	luaL_newlib(L, zephyr_wrappers);
+
+	/* Nest zbus as zephyr.zbus */
+	luaopen_zbus(L);
+	lua_setfield(L, -2, "zbus");
+
+#ifdef CONFIG_LUA_FS
+	/* Nest fs as zephyr.fs */
+	luaopen_fs(L);
+	lua_setfield(L, -2, "fs");
+#endif
+
 	return 1;
+}
+
+/** @brief Load base + package libs and preload zephyr and standard Lua libs. */
+void luaz_openlibs(lua_State *L)
+{
+	LUA_REQUIRE(base);
+	LUA_REQUIRE(package);
+
+	/* Preload zephyr (includes zbus, fs) and standard Lua libs */
+	luaL_getsubtable(L, LUA_REGISTRYINDEX, LUA_PRELOAD_TABLE);
+
+	lua_pushcfunction(L, luaopen_zephyr);
+	lua_setfield(L, -2, "zephyr");
+
+	lua_pushcfunction(L, luaopen_string);
+	lua_setfield(L, -2, "string");
+	lua_pushcfunction(L, luaopen_table);
+	lua_setfield(L, -2, "table");
+	lua_pushcfunction(L, luaopen_math);
+	lua_setfield(L, -2, "math");
+	lua_pushcfunction(L, luaopen_coroutine);
+	lua_setfield(L, -2, "coroutine");
+	lua_pushcfunction(L, luaopen_utf8);
+	lua_setfield(L, -2, "utf8");
+	lua_pushcfunction(L, luaopen_debug);
+	lua_setfield(L, -2, "debug");
+
+	lua_pop(L, 1); /* pop preload table */
 }
 
 /** @brief POSIX stub — _times is unused but required by the toolchain. */

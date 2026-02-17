@@ -1,11 +1,8 @@
 --- Producer script: demonstrates zbus pub/sub with nested messages and
 --- accelerometer data generation from a Lua thread.
 
----@class zbus
----@field chan_version zbus_channel
----@field chan_sensor_config zbus_channel
----@field chan_acc_data zbus_channel
----@field msub_acc_consumed zbus_observer
+local zephyr = require("zephyr")
+local zbus = zephyr.zbus
 
 --- Read and display the system version from the version channel.
 local err, msg = zbus.chan_version:read(500)

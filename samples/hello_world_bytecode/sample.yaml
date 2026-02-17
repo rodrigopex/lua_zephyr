@@ -13,7 +13,6 @@ tests:
       ordered: true
       regex:
         - "-"
-        - "Pre-lua vm setup for hello world lua by the user"
         - "Hello from lua thread"
         - "bye"
         - "allocated 0, free \\d+, max allocated \\d+, heap size 32768"

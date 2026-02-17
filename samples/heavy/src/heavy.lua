@@ -1,3 +1,6 @@
+local zephyr = require("zephyr")
+local string = require("string")
+
 for i = 1, 10 do
 	local name = "func_" .. i
 	_ENV[name] = function()
