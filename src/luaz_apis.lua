@@ -1,33 +1,5 @@
 ---@meta
 
---- Zephyr kernel API bindings.
----@class zephyr
-zephyr = {}
-
---- Sleep for the specified number of milliseconds.
----@param ms integer # Duration in milliseconds.
-function zephyr.msleep(ms) end
-
---- Print a message via Zephyr printk.
----@param message string # Message to print.
-function zephyr.printk(message) end
-
---- Log a message at INFO level.
----@param message string # Message to log.
-function zephyr.log_inf(message) end
-
---- Log a message at WARNING level.
----@param message string # Message to log.
-function zephyr.log_wrn(message) end
-
---- Log a message at DEBUG level.
----@param message string # Message to log.
-function zephyr.log_dbg(message) end
-
---- Log a message at ERROR level.
----@param message string # Message to log.
-function zephyr.log_err(message) end
-
 --- zbus channel userdata (registered via LUA_REQUIRE_ZBUS_CHAN).
 ---@class zbus_channel
 local zbus_channel = {}
@@ -55,14 +27,15 @@ local zbus_observer = {}
 ---@return table|nil data # Message table, or nil on error.
 function zbus_observer:wait_msg(timeout_ms) end
 
---- zbus pub/sub namespace. Channels and observers are registered as fields at
---- runtime (e.g. zbus.chan_acc_data, zbus.msub_consumer).
+--- zbus pub/sub namespace (requires CONFIG_LUA_LIB_ZBUS).
+--- Channels and observers are registered as fields at runtime
+--- (e.g. zephyr.zbus.chan_acc_data, zephyr.zbus.msub_consumer).
 ---@class zbus
-zbus = {}
+local zbus = {}
 
 --- Filesystem API (requires CONFIG_LUA_FS).
 ---@class fs
-fs = {}
+local fs = {}
 
 --- Load and execute a Lua script from the filesystem.
 ---@param path string # File path (relative to mount point or absolute).
@@ -79,3 +52,36 @@ function fs.loadfile(path) end
 ---@param path? string # Directory path (defaults to mount point).
 ---@return table entries # Array of {name: string, size: integer, type: string}.
 function fs.list(path) end
+
+--- Zephyr kernel API bindings.
+--- Access via: local zephyr = require("zephyr")
+---@class zephyr
+---@field zbus zbus # zbus pub/sub namespace (requires CONFIG_LUA_LIB_ZBUS).
+---@field fs fs # Filesystem API (requires CONFIG_LUA_FS).
+local zephyr = {}
+
+--- Sleep for the specified number of milliseconds.
+---@param ms integer # Duration in milliseconds.
+function zephyr.msleep(ms) end
+
+--- Print a message via Zephyr printk.
+---@param message string # Message to print.
+function zephyr.printk(message) end
+
+--- Log a message at INFO level.
+---@param message string # Message to log.
+function zephyr.log_inf(message) end
+
+--- Log a message at WARNING level.
+---@param message string # Message to log.
+function zephyr.log_wrn(message) end
+
+--- Log a message at DEBUG level.
+---@param message string # Message to log.
+function zephyr.log_dbg(message) end
+
+--- Log a message at ERROR level.
+---@param message string # Message to log.
+function zephyr.log_err(message) end
+
+return zephyr
