@@ -4,8 +4,13 @@
 local zephyr = require("zephyr")
 local zbus = zephyr.zbus
 
+local chan_version = zbus.channel_declare("chan_version")
+local chan_sensor_config = zbus.channel_declare("chan_sensor_config")
+local chan_acc_data = zbus.channel_declare("chan_acc_data")
+local msub_acc_consumed = zbus.observer_declare("msub_acc_consumed")
+
 --- Read and display the system version from the version channel.
-local err, msg = zbus.chan_version:read(500)
+local err, msg = chan_version:read(500)
 if msg then
     zephyr.printk("System version: v" .. msg.major .. "." .. msg.minor .. "." .. msg.patch .. "_" .. msg.hardware_id)
 end
@@ -13,9 +18,9 @@ end
 --- Publish a sensor configuration with a nested offset struct, then read it
 --- back to verify the round-trip through the descriptor-based serialization.
 local sensor_cfg = { sensor_id = 42, offset = { x = 1, y = 2, z = 3 } }
-err = zbus.chan_sensor_config:pub(sensor_cfg, 200)
+err = chan_sensor_config:pub(sensor_cfg, 200)
 if err == 0 then
-    err, msg = zbus.chan_sensor_config:read(200)
+    err, msg = chan_sensor_config:read(200)
     if msg then
         zephyr.printk("Sensor_config={sensor_id=" .. msg.sensor_id
             .. " offset={x=" .. msg.offset.x
@@ -49,14 +54,14 @@ while i < 10 do
 
     zephyr.printk("<-- Lua producing data ")
 
-    err = zbus.chan_acc_data:pub(acc_data, 200)
+    err = chan_acc_data:pub(acc_data, 200)
     if err ~= 0 then
         zephyr.printk("Could not pub to channel")
     end
 
     --- Wait for the consumer to process the data and send back an ack message.
     --- (number, number, ack_data_consumed)
-    err, _, msg = zbus.msub_acc_consumed:wait_msg(250)
+    err, _, msg = msub_acc_consumed:wait_msg(250)
 
     if err ~= 0 then
         zephyr.printk("error: " .. err)

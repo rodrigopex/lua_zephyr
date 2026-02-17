@@ -4,6 +4,8 @@ config LUA
     bool "Lua support"
     select ZBUS
     select ZBUS_MSG_SUBSCRIBER
+    select ZBUS_CHANNEL_NAME
+    select ZBUS_OBSERVER_NAME
     help
       Enable Lua support. This is required for the Lua scripting engine.
       If you enable this option, you will be able to use Lua scripts and

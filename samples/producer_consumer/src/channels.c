@@ -36,3 +36,7 @@ ZBUS_CHAN_DEFINE(chan_sensor_config, struct msg_sensor_config, NULL,
 		ZBUS_MSG_INIT(.sensor_id = 0, .offset = {0}));
 
 /* clang-format on */
+
+ZBUS_MSG_SUBSCRIBER_DEFINE(msub_acc_consumed);
+
+ZBUS_CHAN_ADD_OBS(chan_acc_data_consumed, msub_acc_consumed, 3);
