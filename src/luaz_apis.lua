@@ -28,10 +28,20 @@ local zbus_observer = {}
 function zbus_observer:wait_msg(timeout_ms) end
 
 --- zbus pub/sub namespace (requires CONFIG_LUA_LIB_ZBUS).
---- Channels and observers are registered as fields at runtime
---- (e.g. zephyr.zbus.chan_acc_data, zephyr.zbus.msub_consumer).
 ---@class zbus
 local zbus = {}
+
+--- Declare (look up) a zbus channel by name.
+--- Mirrors Zephyr's ZBUS_CHAN_DECLARE — makes the channel available to Lua.
+---@param name string # Channel name (e.g. "chan_acc_data").
+---@return zbus_channel channel # Channel userdata.
+function zbus.channel_declare(name) end
+
+--- Declare (look up) a zbus observer by name.
+--- Mirrors Zephyr's ZBUS_OBS_DECLARE — makes the observer available to Lua.
+---@param name string # Observer name (e.g. "msub_acc_consumed").
+---@return zbus_observer observer # Observer userdata.
+function zbus.observer_declare(name) end
 
 --- Filesystem API (requires CONFIG_LUA_FS).
 ---@class fs

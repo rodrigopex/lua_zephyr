@@ -9,6 +9,7 @@
 
 #include <lauxlib.h>
 #include <lualib.h>
+#include <string.h>
 #include <sys/times.h>
 #include <zephyr/zbus/zbus.h>
 #include <luaz_utils.h>
@@ -278,7 +279,67 @@ static int sub_wait_msg(lua_State *L)
 
 static const struct luaL_Reg zbus_obs_metamethods[] = {{"wait_msg", sub_wait_msg}, {NULL, NULL}};
 
-static const luaL_Reg zbus[] = {{NULL, NULL}};
+/** @brief Lua function: zbus.channel_declare(name) -> channel userdata. */
+static int zbus_channel_declare(lua_State *L)
+{
+	const char *name = luaL_checkstring(L, 1);
+	const struct zbus_channel *chan = zbus_chan_from_name(name);
+
+	if (chan == NULL) {
+		return luaL_error(L, "zbus channel '%s' not found", name);
+	}
+
+	const struct zbus_channel **ud = lua_newuserdata(L, sizeof(const struct zbus_channel *));
+	*ud = chan;
+	luaL_getmetatable(L, ZBUS_CHAN_METATABLE);
+	lua_setmetatable(L, -2);
+
+	return 1;
+}
+
+/** @brief Context for observer name lookup iteration. */
+struct obs_find_ctx {
+	const char *name;
+	const struct zbus_observer *found;
+};
+
+/** @brief Iterator callback: match observer by name. */
+static bool find_obs_by_name(const struct zbus_observer *obs, void *user_data)
+{
+	struct obs_find_ctx *ctx = user_data;
+
+	if (strcmp(zbus_obs_name(obs), ctx->name) == 0) {
+		ctx->found = obs;
+		return false;
+	}
+	return true;
+}
+
+/** @brief Lua function: zbus.observer_declare(name) -> observer userdata. */
+static int zbus_observer_declare(lua_State *L)
+{
+	const char *name = luaL_checkstring(L, 1);
+	struct obs_find_ctx ctx = {.name = name, .found = NULL};
+
+	zbus_iterate_over_observers_with_user_data(find_obs_by_name, &ctx);
+
+	if (ctx.found == NULL) {
+		return luaL_error(L, "zbus observer '%s' not found", name);
+	}
+
+	const struct zbus_observer **ud = lua_newuserdata(L, sizeof(const struct zbus_observer *));
+	*ud = ctx.found;
+	luaL_getmetatable(L, ZBUS_OBS_METATABLE);
+	lua_setmetatable(L, -2);
+
+	return 1;
+}
+
+static const luaL_Reg zbus[] = {
+	{"channel_declare", zbus_channel_declare},
+	{"observer_declare", zbus_observer_declare},
+	{NULL, NULL},
+};
 
 /**
  * @brief Get the zbus subtable from the zephyr global.
