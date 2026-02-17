@@ -1,4 +1,5 @@
-local z = zephyr
+local z = require("zephyr")
+local fs = z.fs
 
 z.printk("Hello from LittleFS!")
 

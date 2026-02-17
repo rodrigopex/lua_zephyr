@@ -1,4 +1,4 @@
-local z = zephyr
+local z = require("zephyr")
 
 local n = 0
 repeat

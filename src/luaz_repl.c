@@ -133,8 +133,7 @@ static int lua_repl_cmd(const struct shell *sh, size_t argc, char **argv, void *
 		return -ENOMEM;
 	}
 
-	LUA_REQUIRE(zephyr);
-	LUA_REQUIRE(base);
+	luaz_openlibs(L);
 
 	shell_print(
 		sh,

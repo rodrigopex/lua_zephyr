@@ -280,13 +280,27 @@ static const struct luaL_Reg zbus_obs_metamethods[] = {{"wait_msg", sub_wait_msg
 
 static const luaL_Reg zbus[] = {{NULL, NULL}};
 
-/** @brief Register a zbus channel as a field in the global `zbus` Lua table. */
+/**
+ * @brief Get the zbus subtable from the zephyr global.
+ *
+ * Auto-loads zephyr via luaL_requiref if not yet loaded.
+ * Pushes the zbus table onto the stack.
+ */
+static void get_zbus_table(lua_State *L)
+{
+	lua_getglobal(L, "zephyr");
+	if (!lua_istable(L, -1)) {
+		lua_pop(L, 1);
+		luaL_requiref(L, "zephyr", luaopen_zephyr, 1);
+	}
+	lua_getfield(L, -1, "zbus");
+	lua_remove(L, -2); /* remove zephyr table, keep zbus */
+}
+
+/** @brief Register a zbus channel as a field in the zephyr.zbus Lua table. */
 int lua_zbus_chan_declare(lua_State *L, const struct zbus_channel *chan, const char *chan_name)
 {
-	lua_getglobal(L, "zbus");
-	if (!lua_istable(L, -1)) {
-		return luaL_error(L, "`zbus' is not initialized");
-	}
+	get_zbus_table(L);
 
 	const struct zbus_channel **chan_ud =
 		lua_newuserdata(L, sizeof(const struct zbus_channel *));
@@ -295,17 +309,15 @@ int lua_zbus_chan_declare(lua_State *L, const struct zbus_channel *chan, const c
 	lua_setmetatable(L, -2);
 
 	lua_setfield(L, -2, chan_name);
+	lua_pop(L, 1); /* pop zbus table */
 
-	return 1;
+	return 0;
 }
 
-/** @brief Register a zbus observer as a field in the global `zbus` Lua table. */
+/** @brief Register a zbus observer as a field in the zephyr.zbus Lua table. */
 int lua_zbus_obs_declare(lua_State *L, const struct zbus_observer *obs, const char *obs_name)
 {
-	lua_getglobal(L, "zbus");
-	if (!lua_istable(L, -1)) {
-		return luaL_error(L, "`zbus' is not initialized");
-	}
+	get_zbus_table(L);
 
 	const struct zbus_observer **obs_ud =
 		lua_newuserdata(L, sizeof(const struct zbus_observer *));
@@ -314,8 +326,9 @@ int lua_zbus_obs_declare(lua_State *L, const struct zbus_observer *obs, const ch
 	lua_setmetatable(L, -2);
 
 	lua_setfield(L, -2, obs_name);
+	lua_pop(L, 1); /* pop zbus table */
 
-	return 1;
+	return 0;
 }
 
 /** @brief Open the `zbus` Lua library. Creates channel and observer metatables. */

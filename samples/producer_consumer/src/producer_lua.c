@@ -20,12 +20,9 @@ ZBUS_MSG_SUBSCRIBER_DEFINE(msub_acc_consumed);
 
 ZBUS_CHAN_ADD_OBS(chan_acc_data_consumed, msub_acc_consumed, 3);
 
-/** @brief Setup hook for the producer Lua thread (loads libs, declares channels). */
+/** @brief Setup hook for the producer Lua thread (declares zbus channels/observers). */
 int producer_lua_setup(lua_State *L)
 {
-	LUA_REQUIRE(zephyr);
-	LUA_REQUIRE(zbus);
-
 	LUA_REQUIRE_ZBUS_CHAN(chan_acc_data);
 	LUA_REQUIRE_ZBUS_CHAN(chan_acc_data_consumed);
 	LUA_REQUIRE_ZBUS_CHAN(chan_version);

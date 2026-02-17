@@ -13,21 +13,12 @@
 
 #include "sample01_lua_bytecode.h"
 
-/** @brief Setup hook for the hello_world Lua thread (loads the zephyr lib). */
-int hello_world_lua_setup(lua_State *L)
-{
-	printk("Pre-lua vm setup for hello world lua by the user\n");
-
-	LUA_REQUIRE(zephyr);
-	return 0;
-}
-
 /** @brief Run the sample01 Lua bytecode using the default Lua allocator. */
 int main(int argc, char *argv[])
 {
 	lua_State *L = luaL_newstate();
 
-	LUA_REQUIRE(zephyr);
+	luaz_openlibs(L);
 
 	if (luaL_loadbuffer(L, (const char *)sample01_lua_bytecode, sample01_lua_bytecode_len,
 			    "sample01") != LUA_OK ||
