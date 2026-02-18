@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.20.0)
 set(ZEPHYR_EXTRA_MODULES "${CMAKE_CURRENT_SOURCE_DIR}/../../")
 
 include(${ZEPHYR_EXTRA_MODULES}/luaz.cmake)
-luaz_add_fs_thread(/lfs/hello_fs.lua)
+luaz_define_fs_thread(/lfs/hello_fs.lua)
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(littlefs_sample)
