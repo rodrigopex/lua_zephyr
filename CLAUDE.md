@@ -102,7 +102,7 @@ Scripts use `require("zephyr")` to access kernel bindings. zbus and fs are neste
 - `zephyr.zbus` — zbus bindings (when `CONFIG_LUA_LIB_ZBUS=y`): `chan:pub`, `chan:read`, `obs:wait_msg`
 - `zephyr.fs` — filesystem bindings (when `CONFIG_LUA_FS=y`): `fs.dofile`, `fs.loadfile`, `fs.list`
 
-Channels/observers are registered in the setup hook via `LUA_REQUIRE_ZBUS_CHAN(chan)` / `LUA_REQUIRE_ZBUS_OBS(obs)`.
+Channels/observers defined in C are declared from Lua via `zbus.channel_declare(name)` / `zbus.observer_declare(name)`. The C-side setup hook with `LUA_REQUIRE_ZBUS_CHAN` / `LUA_REQUIRE_ZBUS_OBS` is still available but not the primary approach.
 
 ### zbus Integration
 

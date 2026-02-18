@@ -85,33 +85,31 @@ z.msleep(1000)
 z.printk("Done.")
 ```
 
-### 3. Wire up the setup hook (optional)
+### 3. Use zbus from Lua (optional)
 
-Each thread calls `<script>_lua_setup` before running — override it to
-register zbus channels and observers:
+Channels and observers defined in C are declared directly from Lua — no C
+setup hook required:
 
-```c
-#include <lua.h>
-#include <luaz_utils.h>
-#include <luaz_zbus.h>
+```lua
+-- src/my_script.lua
+local zephyr = require("zephyr")
+local zbus = zephyr.zbus
 
-int my_script_lua_setup(lua_State *L)
-{
-        LUA_REQUIRE_ZBUS_CHAN(my_channel);
-        LUA_REQUIRE_ZBUS_OBS(my_observer);
-        return 0;
-}
+local my_channel = zbus.channel_declare("my_channel")
+local my_observer = zbus.observer_declare("my_observer")
 
-int main(void)
-{
-        k_sleep(K_FOREVER);
-        return 0;
-}
+-- Publish a table to a channel
+my_channel:pub({ x = 1, y = 2 }, 200)
+
+-- Read the current value
+local err, msg = my_channel:read(200)
+
+-- Wait for a message on an observer
+err, _, msg = my_observer:wait_msg(500)
 ```
 
 > **Note:** `luaz_openlibs()` is called automatically by generated threads,
 > which registers `require()` and preloads all Kconfig-enabled libraries.
-> You only need a setup hook for zbus channel/observer declarations.
 
 ### 4. Enable Lua and build
 
@@ -238,11 +236,13 @@ Loaded with `require("zephyr")`. Automatically preloaded by `luaz_openlibs()`.
 ### `zephyr.zbus` — zbus bindings
 
 Nested inside the `zephyr` table when `CONFIG_LUA_LIB_ZBUS=y`. Channels and
-observers are registered in the setup hook with `LUA_REQUIRE_ZBUS_CHAN` /
-`LUA_REQUIRE_ZBUS_OBS`.
+observers defined in C are declared from Lua with `channel_declare` /
+`observer_declare`:
 
-| Method                        | Description                                               |
+| Function / Method             | Description                                               |
 | ----------------------------- | --------------------------------------------------------- |
+| `zbus.channel_declare(name)`  | Get a channel userdata by name                            |
+| `zbus.observer_declare(name)` | Get an observer userdata by name                          |
 | `chan:pub(table, timeout_ms)` | Publish a Lua table to a zbus channel                     |
 | `chan:read(timeout_ms)`       | Read the current channel value as a Lua table             |
 | `obs:wait_msg(timeout_ms)`    | Block until a message arrives; returns `err, chan, table` |
