@@ -90,6 +90,7 @@ def main():
         template = f.read()
 
     output = template.replace("@FILE_NAME@", args.name)
+    output = output.replace("@FILE_NAME_UPPER@", args.name.upper())
 
     if args.mode == "source":
         content = lua_to_c_string(args.file)

@@ -17,7 +17,17 @@
 #include <luaz_fs.h>
 #include <zephyr/kernel.h>
 
-static char heap_mem[CONFIG_LUA_THREAD_HEAP_SIZE];
+#ifndef CONFIG_@FILE_NAME_UPPER@_LUA_THREAD_STACK_SIZE
+#define CONFIG_@FILE_NAME_UPPER@_LUA_THREAD_STACK_SIZE CONFIG_LUA_THREAD_STACK_SIZE
+#endif
+#ifndef CONFIG_@FILE_NAME_UPPER@_LUA_THREAD_HEAP_SIZE
+#define CONFIG_@FILE_NAME_UPPER@_LUA_THREAD_HEAP_SIZE CONFIG_LUA_THREAD_HEAP_SIZE
+#endif
+#ifndef CONFIG_@FILE_NAME_UPPER@_LUA_THREAD_PRIORITY
+#define CONFIG_@FILE_NAME_UPPER@_LUA_THREAD_PRIORITY CONFIG_LUA_THREAD_PRIORITY
+#endif
+
+static char heap_mem[CONFIG_@FILE_NAME_UPPER@_LUA_THREAD_HEAP_SIZE];
 static struct sys_heap lua_heap;
 static const char @FILE_NAME@_script_path[] = "@LUA_FS_PATH@";
 
@@ -46,7 +56,7 @@ static void print_sys_memory_stats(struct sys_heap *hp)
 	sys_heap_runtime_stats_get(hp, &stats);
 
 	printk("allocated %zu, free %zu, max allocated %zu, heap size %u\n", stats.allocated_bytes,
-	       stats.free_bytes, stats.max_allocated_bytes, CONFIG_LUA_THREAD_HEAP_SIZE);
+	       stats.free_bytes, stats.max_allocated_bytes, CONFIG_@FILE_NAME_UPPER@_LUA_THREAD_HEAP_SIZE);
 }
 #endif
 
@@ -57,7 +67,7 @@ static void @FILE_NAME@_lua_thread(void*p1, void*p2, void*p3)
     ARG_UNUSED(p2);
     ARG_UNUSED(p3);
 
-	sys_heap_init(&lua_heap, heap_mem, CONFIG_LUA_THREAD_HEAP_SIZE);
+	sys_heap_init(&lua_heap, heap_mem, CONFIG_@FILE_NAME_UPPER@_LUA_THREAD_HEAP_SIZE);
 
 	lua_State *L = lua_newstate(lua_zephyr_allocator, &lua_heap, 0);
 	luaz_openlibs(L);
@@ -88,6 +98,6 @@ static void @FILE_NAME@_lua_thread(void*p1, void*p2, void*p3)
     k_sleep(K_FOREVER);
 }
 
-K_THREAD_DEFINE(@FILE_NAME@_lua_thread_id, CONFIG_LUA_THREAD_STACK_SIZE, @FILE_NAME@_lua_thread, NULL, NULL, NULL, CONFIG_LUA_THREAD_PRIORITY, 0, 0);
+K_THREAD_DEFINE(@FILE_NAME@_lua_thread_id, CONFIG_@FILE_NAME_UPPER@_LUA_THREAD_STACK_SIZE, @FILE_NAME@_lua_thread, NULL, NULL, NULL, CONFIG_@FILE_NAME_UPPER@_LUA_THREAD_PRIORITY, 0, 0);
 
 /* clang-format on */
