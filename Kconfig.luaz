@@ -56,7 +56,6 @@ config LUA_THREAD_PRIORITY
 config LUA_LIBS_ALL
     bool "Preload all Lua standard libraries"
     depends on LUA
-    default y
     help
       Preload all standard Lua libraries (string, table, math, coroutine,
       utf8, debug) and zbus into the Lua state. Disable to select
