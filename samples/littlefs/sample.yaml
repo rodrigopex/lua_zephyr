@@ -17,6 +17,11 @@ tests:
         - "Hello from LittleFS!"
         - "Greetings from greet.lua!"
         - "dofile returned successfully"
+        - "Lua Language Data:"
+        - "language\\s+: Lua"
+        - "file: greet.lua \\(\\d+ bytes\\)"
+        - "file: hello_fs.lua \\(\\d+ bytes\\)"
+        - "file: info.lua \\(\\d+ bytes\\)"
         - "heap:\\s+32768\\s+\\d+\\s+\\d+\\s+\\d+%"
         - "stack:\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\d+%"
     tags: lua_zephyr

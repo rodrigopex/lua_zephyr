@@ -61,7 +61,7 @@ void luaz_print_mem_usage(struct sys_heap *hp, size_t heap_size)
 	ARG_UNUSED(heap_size);
 
 	printk("-- Lua thread memory report:\n");
-	printk("        %6s  %8s  %8s  %5s\n", "size", "max used", "unused", "usage");
+	printk("       %6s  %8s  %8s  %5s\n", "size", "max used", "unused", "usage");
 
 #ifdef CONFIG_SYS_HEAP_RUNTIME_STATS
 	{

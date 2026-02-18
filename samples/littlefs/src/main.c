@@ -16,6 +16,7 @@
 
 #include "hello_fs_lua_script.h"
 #include "greet_lua_script.h"
+#include "info_lua_script.h"
 
 LOG_MODULE_REGISTER(littlefs_sample);
 
@@ -65,6 +66,7 @@ int main(void)
 
 	lua_fs_write_file("/lfs/hello_fs.lua", hello_fs_lua_script, 0);
 	lua_fs_write_file("/lfs/greet.lua", greet_lua_script, 0);
+	lua_fs_write_file("/lfs/info.lua", info_lua_script, 0);
 
 	printk("Bootstrap: done\n");
 
