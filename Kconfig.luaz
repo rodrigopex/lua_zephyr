@@ -11,9 +11,10 @@ config LUA
       If you enable this option, you will be able to use Lua scripts and
       spawn Lua threads.
 
-config LUA_REPL
+if LUA
+
+    config LUA_REPL
     bool "Lua REPL support"
-    depends on LUA
     select SHELL
     default n
     help
@@ -30,14 +31,12 @@ config LUA_REPL_LINE_SIZE
 
 config LUA_THREAD_STACK_SIZE
     int "Lua thread stack size"
-    depends on LUA
     default 2048
     help
       The stack size for Lua threads automatically created by Lua Zephyr.
 
 config LUA_THREAD_HEAP_SIZE
   int "Lua thread heap size"
-  depends on LUA
   default 32768
   help
     The heap size for Lua threads automatically created by Lua Zephyr.
@@ -46,7 +45,6 @@ config LUA_THREAD_HEAP_SIZE
 
 config LUA_THREAD_PRIORITY
   int "Lua thread priority"
-  depends on LUA
   default 7
   help
     The priority of Lua threads automatically created by Lua Zephyr.
@@ -55,7 +53,6 @@ config LUA_THREAD_PRIORITY
 
 config LUA_LIBS_ALL
     bool "Preload all Lua standard libraries"
-    depends on LUA
     help
       Preload all standard Lua libraries (string, table, math, coroutine,
       utf8, debug) and zbus into the Lua state. Disable to select
@@ -63,56 +60,48 @@ config LUA_LIBS_ALL
 
 config LUA_LIB_STRING
     bool "Lua string library"
-    depends on LUA
     default y if LUA_LIBS_ALL
     help
       Preload the Lua string library (string.format, string.sub, etc.).
 
 config LUA_LIB_TABLE
     bool "Lua table library"
-    depends on LUA
     default y if LUA_LIBS_ALL
     help
       Preload the Lua table library (table.insert, table.sort, etc.).
 
 config LUA_LIB_MATH
     bool "Lua math library"
-    depends on LUA
     default y if LUA_LIBS_ALL
     help
       Preload the Lua math library (math.sin, math.floor, etc.).
 
 config LUA_LIB_COROUTINE
     bool "Lua coroutine library"
-    depends on LUA
     default y if LUA_LIBS_ALL
     help
       Preload the Lua coroutine library.
 
 config LUA_LIB_UTF8
     bool "Lua utf8 library"
-    depends on LUA
     default y if LUA_LIBS_ALL
     help
       Preload the Lua utf8 library.
 
 config LUA_LIB_DEBUG
     bool "Lua debug library"
-    depends on LUA
     default y if LUA_LIBS_ALL
     help
       Preload the Lua debug library.
 
 config LUA_LIB_ZBUS
     bool "Lua zbus library"
-    depends on LUA
     default y if LUA_LIBS_ALL
     help
       Include zbus bindings as zephyr.zbus subtable.
 
 config LUA_PRECOMPILE
     bool "Pre-compile Lua scripts to bytecode at build time"
-    depends on LUA
     help
       Compiles .lua scripts to stripped bytecode during the build using a
       host-built luac. Reduces target heap usage by skipping the parse phase.
@@ -136,7 +125,6 @@ config LUA_EXTRA_OPTIMIZATIONS
 
 config LUA_FS
     bool "Lua filesystem support"
-    depends on LUA
     depends on FILE_SYSTEM
     help
       Enable filesystem support for Lua scripts. Provides fs.dofile,
@@ -168,8 +156,11 @@ config LUA_FS_SHELL
       lua_fs list, cat, write, delete, run, stat.
 
 module = LUA_ZEPHYR
-module-str = lua_zephyr
+module-str = luaz
 source "subsys/logging/Kconfig.template.log_config"
+
+endif
+
 endmenu
 
 choice LIBC_IMPLEMENTATION
