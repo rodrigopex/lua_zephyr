@@ -15,7 +15,7 @@ include_directories(include/)
 # Embed Lua scripts as C strings for bootstrap (written to FS at boot)
 luaz_add_file("src/hello_fs.lua")
 luaz_add_file("src/greet.lua")
-luaz_add_file("src/info.lua")
+luaz_add_bytecode_file("src/info.lua")
 
 luaz_generate_threads()
 
