@@ -341,64 +341,6 @@ static const luaL_Reg zbus[] = {
 	{NULL, NULL},
 };
 
-/**
- * @brief Get the zbus subtable from the zephyr global.
- *
- * Auto-loads zephyr via luaL_requiref if not yet loaded.
- * Initializes the zbus subtable if missing (e.g. CONFIG_LUA_LIB_ZBUS=n).
- * Pushes the zbus table onto the stack.
- */
-static void get_zbus_table(lua_State *L)
-{
-	lua_getglobal(L, "zephyr");
-	if (!lua_istable(L, -1)) {
-		lua_pop(L, 1);
-		luaL_requiref(L, "zephyr", luaopen_zephyr, 1);
-	}
-	lua_getfield(L, -1, "zbus");
-	if (!lua_istable(L, -1)) {
-		lua_pop(L, 1);
-		luaopen_zbus(L);
-		lua_pushvalue(L, -1);
-		lua_setfield(L, -3, "zbus");
-	}
-	lua_remove(L, -2); /* remove zephyr table, keep zbus */
-}
-
-/** @brief Register a zbus channel as a field in the zephyr.zbus Lua table. */
-int lua_zbus_chan_declare(lua_State *L, const struct zbus_channel *chan, const char *chan_name)
-{
-	get_zbus_table(L);
-
-	const struct zbus_channel **chan_ud =
-		lua_newuserdata(L, sizeof(const struct zbus_channel *));
-	*chan_ud = chan;
-	luaL_getmetatable(L, ZBUS_CHAN_METATABLE);
-	lua_setmetatable(L, -2);
-
-	lua_setfield(L, -2, chan_name);
-	lua_pop(L, 1); /* pop zbus table */
-
-	return 0;
-}
-
-/** @brief Register a zbus observer as a field in the zephyr.zbus Lua table. */
-int lua_zbus_obs_declare(lua_State *L, const struct zbus_observer *obs, const char *obs_name)
-{
-	get_zbus_table(L);
-
-	const struct zbus_observer **obs_ud =
-		lua_newuserdata(L, sizeof(const struct zbus_observer *));
-	*obs_ud = obs;
-	luaL_getmetatable(L, ZBUS_OBS_METATABLE);
-	lua_setmetatable(L, -2);
-
-	lua_setfield(L, -2, obs_name);
-	lua_pop(L, 1); /* pop zbus table */
-
-	return 0;
-}
-
 /** @brief Open the `zbus` Lua library. Creates channel and observer metatables. */
 int luaopen_zbus(lua_State *L)
 {
