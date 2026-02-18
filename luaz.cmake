@@ -224,6 +224,12 @@ endfunction()
 # Arguments:
 #   FILE_NAME_PATH - Path to the .lua file (relative to project source dir).
 function(luaz_add_bytecode_file FILE_NAME_PATH)
+    if(NOT CONFIG_LUA_PRECOMPILE)
+        message(FATAL_ERROR
+            "luaz_add_bytecode_file(${FILE_NAME_PATH}) requires CONFIG_LUA_PRECOMPILE=y. "
+            "Enable it in your prj.conf to use bytecode pre-compilation.")
+    endif()
+
     cmake_path(GET FILE_NAME_PATH FILENAME FILE_NAME)
     cmake_path(REMOVE_EXTENSION FILE_NAME OUTPUT_VARIABLE FILE_NAME)
 
@@ -270,6 +276,12 @@ endfunction()
 # Arguments:
 #   FILE_NAME_PATH - Path to the .lua file (relative to project source dir).
 function(luaz_add_bytecode_thread FILE_NAME_PATH)
+    if(NOT CONFIG_LUA_PRECOMPILE)
+        message(FATAL_ERROR
+            "luaz_add_bytecode_thread(${FILE_NAME_PATH}) requires CONFIG_LUA_PRECOMPILE=y. "
+            "Enable it in your prj.conf to use bytecode pre-compilation.")
+    endif()
+
     cmake_path(GET FILE_NAME_PATH FILENAME FILE_NAME)
     cmake_path(REMOVE_EXTENSION FILE_NAME OUTPUT_VARIABLE FILE_NAME)
 
