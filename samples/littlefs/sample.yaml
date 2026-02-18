@@ -17,7 +17,8 @@ tests:
         - "Hello from LittleFS!"
         - "Greetings from greet.lua!"
         - "dofile returned successfully"
-        - "allocated 0, free \\d+, max allocated \\d+, heap size 32768"
+        - "heap:\\s+32768\\s+\\d+\\s+\\d+\\s+\\d+%"
+        - "stack:\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\d+%"
     tags: lua_zephyr
     integration_platforms:
       - qemu_x86

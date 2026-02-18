@@ -13,7 +13,8 @@ tests:
       ordered: false
       regex:
         - "Heavy load sample finished"
-        - "allocated 0, free \\d{4,5}, max allocated \\d{4,5}, heap size \\d{4,5}"
+        - "heap:\\s+\\d{4,5}\\s+\\d+\\s+\\d+\\s+\\d+%"
+        - "stack:\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\d+%"
     tags: lua_zephyr
     integration_platforms:
       - qemu_x86
