@@ -33,6 +33,45 @@ endif()
 set(LUA_GENERATE_SCRIPT "${CMAKE_CURRENT_LIST_DIR}/scripts/luaz_gen.py"
     CACHE INTERNAL "Path to luaz_gen.py")
 
+# _lua_generate_thread_kconfig(FILE_NAME)
+#
+# Generate a per-thread Kconfig fragment with STACK_SIZE, HEAP_SIZE,
+# and PRIORITY options that default to the global CONFIG_LUA_THREAD_* values.
+#
+# The file is written to ${KCONFIG_BINARY_DIR}/Kconfig.lua_thread.${FILE_NAME}
+# and picked up by osource in Kconfig.luaz.
+function(_lua_generate_thread_kconfig FILE_NAME)
+    string(TOUPPER "${FILE_NAME}" FILE_NAME_UPPER)
+    set(KCONFIG_FILE "${KCONFIG_BINARY_DIR}/Kconfig.lua_thread.${FILE_NAME}")
+
+    if(EXISTS "${KCONFIG_FILE}")
+        return()
+    endif()
+
+    file(WRITE "${KCONFIG_FILE}"
+"config ${FILE_NAME_UPPER}_LUA_THREAD_STACK_SIZE\n\
+    int \"${FILE_NAME} Lua thread stack size\"\n\
+    default LUA_THREAD_STACK_SIZE\n\
+    help\n\
+      Stack size for the ${FILE_NAME} Lua thread.\n\
+\n\
+config ${FILE_NAME_UPPER}_LUA_THREAD_HEAP_SIZE\n\
+    int \"${FILE_NAME} Lua thread heap size\"\n\
+    default LUA_THREAD_HEAP_SIZE\n\
+    help\n\
+      Heap size for the ${FILE_NAME} Lua thread.\n\
+\n\
+config ${FILE_NAME_UPPER}_LUA_THREAD_PRIORITY\n\
+    int \"${FILE_NAME} Lua thread priority\"\n\
+    default LUA_THREAD_PRIORITY\n\
+    help\n\
+      Priority for the ${FILE_NAME} Lua thread.\n"
+    )
+
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${KCONFIG_FILE}")
+endfunction()
+
+
 # add_lua_file(FILE_NAME_PATH)
 #
 # Embed a .lua script as a C const string header.
@@ -109,6 +148,8 @@ function(add_lua_thread FILE_NAME_PATH)
         DEPENDS "${LUA_FILE}" "${LUA_TEMPLATE}"
         COMMENT "Generating ${FILE_NAME}_lua_thread.c from ${FILE_NAME}.lua"
     )
+
+    _lua_generate_thread_kconfig("${FILE_NAME}")
 
     include_directories("${LUA_OUTPUT_DIR}")
 
@@ -198,6 +239,8 @@ function(add_lua_bytecode_thread FILE_NAME_PATH)
         COMMENT "Generating ${FILE_NAME}_lua_bytecode_thread.c from ${FILE_NAME}.lua"
     )
 
+    _lua_generate_thread_kconfig("${FILE_NAME}")
+
     include_directories("${LUA_OUTPUT_DIR}")
 
     target_sources(app PRIVATE "${LUA_OUTPUT}")
@@ -223,6 +266,9 @@ function(add_lua_fs_thread SCRIPT_FS_PATH)
     string(REGEX REPLACE "^_+" "" FILE_NAME "${FILE_NAME}")
 
     set(LUA_FS_PATH "${SCRIPT_FS_PATH}")
+    string(TOUPPER "${FILE_NAME}" FILE_NAME_UPPER)
+
+    _lua_generate_thread_kconfig("${FILE_NAME}")
 
     configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/templates/lua_fs_thread.c.in"
     "${CMAKE_CURRENT_BINARY_DIR}/lua/${FILE_NAME}_lua_fs_thread.c")
@@ -247,4 +293,22 @@ endfunction()
 #   FS_NAME     - Optional: basename on the filesystem (defaults to source basename).
 function(add_lua_fs_file SOURCE_PATH)
     add_lua_file("${SOURCE_PATH}")
+endfunction()
+
+
+# lua_generate_threads()
+#
+# Generate Lua threads from the LUA_SOURCE_THREADS, LUA_BYTECODE_THREADS,
+# and LUA_FS_THREADS list variables. Each entry is processed by the
+# corresponding add_lua_*_thread() function.
+function(lua_generate_threads)
+    foreach(_path ${LUA_SOURCE_THREADS})
+        add_lua_thread("${_path}")
+    endforeach()
+    foreach(_path ${LUA_BYTECODE_THREADS})
+        add_lua_bytecode_thread("${_path}")
+    endforeach()
+    foreach(_path ${LUA_FS_THREADS})
+        add_lua_fs_thread("${_path}")
+    endforeach()
 endfunction()

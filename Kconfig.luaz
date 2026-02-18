@@ -159,6 +159,8 @@ module = LUA_ZEPHYR
 module-str = luaz
 source "subsys/logging/Kconfig.template.log_config"
 
+osource "$(KCONFIG_BINARY_DIR)/Kconfig.lua_thread.*"
+
 endif
 
 endmenu
