@@ -169,6 +169,18 @@ There are three thread flavours:
 | **Bytecode**   | `luaz_define_bytecode_thread` | Precompiled, parser can be stripped  |
 | **Filesystem** | `luaz_define_fs_thread`       | Loaded from FS path at runtime       |
 
+#### Source vs bytecode: memory comparison
+
+Measured on the [`heavy`](samples/heavy) sample (mps2/an385, 32 KB heap, 4 KB stack):
+
+| Resource   |  Source Thread | Bytecode Thread |            Saving |
+| ---------- | -------------: | --------------: | ----------------: |
+| Heap peak  | 23 856 B (72%) |  22 168 B (67%) |  -1 688 B (-7.1%) |
+| Stack peak |  2 744 B (66%) |   1 080 B (26%) | -1 664 B (-60.6%) |
+
+Bytecode threads skip the parser's recursive-descent call chain at runtime,
+which accounts for the large stack reduction.
+
 ### zbus integration
 
 Scripts interact with the rest of the system exclusively through
