@@ -56,16 +56,16 @@ clang-format -i <file>   # Uses .clang-format (Zephyr-aligned LLVM, 8-space inde
 
 ### CMake Functions (`lua.cmake`)
 
-- `add_lua_file(path)` — Embed a `.lua` file as a C string header (via `lua_cat.py`)
-- `add_lua_thread(path)` — Generate a Lua thread with heap, state, and embedded source script (via `lua_thread.c.in`)
-- `add_lua_bytecode_file(path)` — Embed precompiled bytecode as a C `uint8_t[]` header (requires `CONFIG_LUA_PRECOMPILE`)
-- `add_lua_bytecode_thread(path)` — Generate a Lua thread that loads precompiled bytecode (requires `CONFIG_LUA_PRECOMPILE`)
-- `add_lua_fs_file(src [name])` — Register a Lua file for embedding and writing to the filesystem at boot (requires `CONFIG_LUA_FS`)
-- `add_lua_fs_thread(fs_path)` — Generate a Lua thread that loads its script from the filesystem at runtime (requires `CONFIG_LUA_FS`)
+- `luaz_add_file(path)` — Embed a `.lua` file as a C string header (via `lua_cat.py`)
+- `luaz_add_thread(path)` — Generate a Lua thread with heap, state, and embedded source script (via `lua_thread.c.in`)
+- `luaz_add_bytecode_file(path)` — Embed precompiled bytecode as a C `uint8_t[]` header (requires `CONFIG_LUA_PRECOMPILE`)
+- `luaz_add_bytecode_thread(path)` — Generate a Lua thread that loads precompiled bytecode (requires `CONFIG_LUA_PRECOMPILE`)
+- `luaz_add_fs_file(src [name])` — Register a Lua file for embedding and writing to the filesystem at boot (requires `CONFIG_LUA_FS`)
+- `luaz_add_fs_thread(fs_path)` — Generate a Lua thread that loads its script from the filesystem at runtime (requires `CONFIG_LUA_FS`)
 
 ### Thread Model
 
-Each `add_lua_thread()` call (and its bytecode/fs variants) generates a Zephyr thread with:
+Each `luaz_add_thread()` call (and its bytecode/fs variants) generates a Zephyr thread with:
 
 - Dedicated `sys_heap` (`CONFIG_LUA_THREAD_HEAP_SIZE`, default 32KB)
 - Dedicated stack (`CONFIG_LUA_THREAD_STACK_SIZE`, default 2KB)
@@ -74,9 +74,9 @@ Each `add_lua_thread()` call (and its bytecode/fs variants) generates a Zephyr t
 
 **Variants:**
 
-- **Source thread** (`add_lua_thread`) — script embedded as C string, parsed at startup
-- **Bytecode thread** (`add_lua_bytecode_thread`) — script precompiled, parser can be stripped
-- **Filesystem thread** (`add_lua_fs_thread`) — script loaded from FS path at runtime
+- **Source thread** (`luaz_add_thread`) — script embedded as C string, parsed at startup
+- **Bytecode thread** (`luaz_add_bytecode_thread`) — script precompiled, parser can be stripped
+- **Filesystem thread** (`luaz_add_fs_thread`) — script loaded from FS path at runtime
 
 ### zbus Integration
 

@@ -3,7 +3,7 @@
  * @brief CMake configure_file template for generating Lua thread source files.
  *
  * Placeholders @FILE_NAME@ and @LUA_CONTENT@ are substituted by CMake's
- * configure_file when add_lua_thread() is called from lua.cmake.
+ * configure_file when luaz_add_thread() is called from lua.cmake.
  * The generated file creates a Zephyr thread with its own sys_heap,
  * Lua state, and an embedded Lua script.
  */

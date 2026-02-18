@@ -3,7 +3,7 @@
  * @brief CMake configure_file template for generating Lua bytecode thread source files.
  *
  * Placeholders @FILE_NAME@, @LUA_BYTECODE@, and @LUA_BYTECODE_LEN@ are
- * substituted by CMake's configure_file when add_lua_bytecode_thread() is
+ * substituted by CMake's configure_file when luaz_add_bytecode_thread() is
  * called from lua.cmake.
  * The generated file creates a Zephyr thread with its own sys_heap,
  * Lua state, and pre-compiled bytecode (loaded via luaL_loadbuffer).

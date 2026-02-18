@@ -4,10 +4,10 @@ cmake_minimum_required(VERSION 3.20.0)
 
 set(ZEPHYR_EXTRA_MODULES "${CMAKE_CURRENT_SOURCE_DIR}/../../")
 
-include(${ZEPHYR_EXTRA_MODULES}/lua_kconfig.cmake)
-lua_add_source_thread(src/heavy.lua)
+include(${ZEPHYR_EXTRA_MODULES}/luaz.cmake)
+luaz_add_source_thread(src/heavy.lua)
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(heavy_sample)
 
-lua_generate_threads()
+luaz_generate_threads()

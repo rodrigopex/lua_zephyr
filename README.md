@@ -60,10 +60,10 @@ find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(my_app)
 
 # Embed a Lua script as a C string header
-add_lua_file("src/helper.lua")
+luaz_add_file("src/helper.lua")
 
 # Create a dedicated Lua thread that runs a script
-add_lua_thread("src/my_script.lua")
+luaz_add_thread("src/my_script.lua")
 
 target_sources(app PRIVATE src/main.c)
 ```
@@ -81,7 +81,7 @@ z.printk("Done.")
 
 ### 3. Wire up the setup hook
 
-Each `add_lua_thread("src/my_script.lua")` generates a thread that calls
+Each `luaz_add_thread("src/my_script.lua")` generates a thread that calls
 `my_script_lua_setup` before running the script — use it to register
 the libraries your script needs:
 
@@ -119,13 +119,13 @@ just run            # west build -t run
 Every sample includes a `sample.yaml` for automated testing with
 [twister](https://docs.zephyrproject.org/latest/develop/test/twister.html).
 
-| Sample                                                 | Description                              | Key Features                                        |
-| ------------------------------------------------------ | ---------------------------------------- | --------------------------------------------------- |
-| [`hello_world`](samples/hello_world)                   | Basic Lua thread + embedded script       | `add_lua_thread`, `add_lua_file`, REPL, logging     |
-| [`hello_world_bytecode`](samples/hello_world_bytecode) | Bytecode-only variant                    | `add_lua_bytecode_thread`, parser stripped          |
-| [`producer_consumer`](samples/producer_consumer)       | zbus pub/sub between Lua and C           | nanopb descriptors, nested structs, bytecode        |
-| [`littlefs`](samples/littlefs)                         | Scripts loaded from LittleFS at runtime  | `add_lua_fs_thread`, `add_lua_fs_file`, `fs.dofile` |
-| [`heavy`](samples/heavy)                               | Stress test with dynamic code generation | Heap usage tracking, recursion, string ops          |
+| Sample                                                 | Description                              | Key Features                                          |
+| ------------------------------------------------------ | ---------------------------------------- | ----------------------------------------------------- |
+| [`hello_world`](samples/hello_world)                   | Basic Lua thread + embedded script       | `luaz_add_thread`, `luaz_add_file`, REPL, logging     |
+| [`hello_world_bytecode`](samples/hello_world_bytecode) | Bytecode-only variant                    | `luaz_add_bytecode_thread`, parser stripped           |
+| [`producer_consumer`](samples/producer_consumer)       | zbus pub/sub between Lua and C           | nanopb descriptors, nested structs, bytecode          |
+| [`littlefs`](samples/littlefs)                         | Scripts loaded from LittleFS at runtime  | `luaz_add_fs_thread`, `luaz_add_fs_file`, `fs.dofile` |
+| [`heavy`](samples/heavy)                               | Stress test with dynamic code generation | Heap usage tracking, recursion, string ops            |
 
 ```sh
 # Run a single sample
@@ -140,7 +140,7 @@ just test           # west twister -p mps2/an385 -T samples
 
 ### Thread model
 
-Each `add_lua_thread()` (or its bytecode / filesystem variant) generates a
+Each `luaz_add_thread()` (or its bytecode / filesystem variant) generates a
 self-contained Zephyr thread with:
 
 - A dedicated **sys_heap** (`CONFIG_LUA_THREAD_HEAP_SIZE`, default 32 KB)
@@ -150,11 +150,11 @@ self-contained Zephyr thread with:
 
 There are three thread flavours:
 
-| Variant        | CMake function            | Script location                      |
-| -------------- | ------------------------- | ------------------------------------ |
-| **Source**     | `add_lua_thread`          | Embedded as C string, parsed at boot |
-| **Bytecode**   | `add_lua_bytecode_thread` | Precompiled, parser can be stripped  |
-| **Filesystem** | `add_lua_fs_thread`       | Loaded from FS path at runtime       |
+| Variant        | CMake function             | Script location                      |
+| -------------- | -------------------------- | ------------------------------------ |
+| **Source**     | `luaz_add_thread`          | Embedded as C string, parsed at boot |
+| **Bytecode**   | `luaz_add_bytecode_thread` | Precompiled, parser can be stripped  |
+| **Filesystem** | `luaz_add_fs_thread`       | Loaded from FS path at runtime       |
 
 ### zbus integration
 
@@ -183,19 +183,19 @@ All functions are provided by `lua.cmake` (auto-included when the module is load
 
 ### Thread generators
 
-| Function                        | Description                                                                              |
-| ------------------------------- | ---------------------------------------------------------------------------------------- |
-| `add_lua_thread(path)`          | Embed a Lua source script and run it in a dedicated Zephyr thread                        |
-| `add_lua_bytecode_thread(path)` | Same, but precompile to bytecode at build time (`CONFIG_LUA_PRECOMPILE`)                 |
-| `add_lua_fs_thread(fs_path)`    | Generate a thread that loads its script from the filesystem at runtime (`CONFIG_LUA_FS`) |
+| Function                         | Description                                                                              |
+| -------------------------------- | ---------------------------------------------------------------------------------------- |
+| `luaz_add_thread(path)`          | Embed a Lua source script and run it in a dedicated Zephyr thread                        |
+| `luaz_add_bytecode_thread(path)` | Same, but precompile to bytecode at build time (`CONFIG_LUA_PRECOMPILE`)                 |
+| `luaz_add_fs_thread(fs_path)`    | Generate a thread that loads its script from the filesystem at runtime (`CONFIG_LUA_FS`) |
 
 ### File embedders
 
-| Function                      | Description                                                             |
-| ----------------------------- | ----------------------------------------------------------------------- |
-| `add_lua_file(path)`          | Embed a `.lua` file as a C `const char[]` header                        |
-| `add_lua_bytecode_file(path)` | Embed precompiled bytecode as a C `uint8_t[]` header                    |
-| `add_lua_fs_file(src [name])` | Register a Lua file for embedding and writing to the filesystem at boot |
+| Function                       | Description                                                             |
+| ------------------------------ | ----------------------------------------------------------------------- |
+| `luaz_add_file(path)`          | Embed a `.lua` file as a C `const char[]` header                        |
+| `luaz_add_bytecode_file(path)` | Embed precompiled bytecode as a C `uint8_t[]` header                    |
+| `luaz_add_fs_file(src [name])` | Register a Lua file for embedding and writing to the filesystem at boot |
 
 ## Lua API
 
