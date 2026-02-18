@@ -58,6 +58,13 @@ config LUA_LIBS_ALL
       utf8, debug) and zbus into the Lua state. Disable to select
       individual libraries and reduce flash usage.
 
+config LUA_LIB_BASE
+    bool "Lua base library"
+    default y if LUA_LIBS_ALL
+    help
+      Preload the Lua base library (type, tostring, tonumber, ipairs,
+      pairs, error, pcall, select, next, rawget, rawset, etc.).
+
 config LUA_LIB_STRING
     bool "Lua string library"
     default y if LUA_LIBS_ALL

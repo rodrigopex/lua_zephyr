@@ -264,6 +264,11 @@ void luaz_openlibs(lua_State *L)
 	lua_pushcfunction(L, luaz_require);
 	lua_setglobal(L, "require");
 
+#ifdef CONFIG_LUA_LIB_BASE
+	luaL_requiref(L, LUA_GNAME, luaopen_base, 1);
+	lua_pop(L, 1);
+#endif
+
 	/* Preload zephyr (includes zbus, fs) and standard Lua libs */
 	luaL_getsubtable(L, LUA_REGISTRYINDEX, LUA_PRELOAD_TABLE);
 
