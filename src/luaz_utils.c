@@ -174,11 +174,59 @@ int luaopen_zephyr(lua_State *L)
 	return 1;
 }
 
-/** @brief Load base + package libs and preload zephyr and standard Lua libs. */
+/**
+ * @brief Minimal require() for preload-only environments.
+ *
+ * Checks registry._LOADED[name] first (cached), then falls back to
+ * registry._PRELOAD[name].  No file/C-library searchers — eliminates
+ * ~1 KB heap overhead of luaopen_package() per Lua state.
+ */
+static int luaz_require(lua_State *L)
+{
+	const char *name = luaL_checkstring(L, 1);
+
+	lua_settop(L, 1);
+
+	/* idx 2: _LOADED table */
+	luaL_getsubtable(L, LUA_REGISTRYINDEX, LUA_LOADED_TABLE);
+	lua_getfield(L, 2, name);
+	if (lua_toboolean(L, -1)) {
+		return 1;
+	}
+	lua_pop(L, 1);
+
+	/* idx 3: _PRELOAD table */
+	luaL_getsubtable(L, LUA_REGISTRYINDEX, LUA_PRELOAD_TABLE);
+	if (lua_getfield(L, 3, name) == LUA_TNIL) {
+		return luaL_error(L,
+				  "module '%s' not found:\n\t"
+				  "no field package.preload['%s']",
+				  name, name);
+	}
+
+	/* call loader(name, ":preload:") */
+	lua_pushvalue(L, 1);
+	lua_pushliteral(L, ":preload:");
+	lua_call(L, 2, 1);
+
+	if (!lua_isnil(L, -1)) {
+		lua_setfield(L, 2, name); /* _LOADED[name] = result */
+	} else {
+		lua_pop(L, 1);
+		lua_pushboolean(L, 1);
+		lua_setfield(L, 2, name); /* _LOADED[name] = true */
+	}
+
+	lua_getfield(L, 2, name);
+	lua_pushliteral(L, ":preload:");
+	return 2;
+}
+
+/** @brief Register minimal require() and preload zephyr + standard Lua libs. */
 void luaz_openlibs(lua_State *L)
 {
-	LUA_REQUIRE(base);
-	LUA_REQUIRE(package);
+	lua_pushcfunction(L, luaz_require);
+	lua_setglobal(L, "require");
 
 	/* Preload zephyr (includes zbus, fs) and standard Lua libs */
 	luaL_getsubtable(L, LUA_REGISTRYINDEX, LUA_PRELOAD_TABLE);
