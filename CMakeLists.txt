@@ -52,7 +52,6 @@ if(CONFIG_LUA)
     zephyr_library_sources_ifdef(CONFIG_LUA_FS_SHELL
         "${SRC_DIR}/luaz_fs_shell.c")
 
-    # Add the helper functions to be used inside the user CMakeLists.txt. For
-    # now, only `add_lua_file` exists.
+    # Add the helper functions to be used inside the user CMakeLists.txt.
     include("${LUA_DIR}/lua.cmake")
 endif()

@@ -29,18 +29,18 @@ if(CONFIG_LUA_PRECOMPILE)
     endif()
 endif()
 
-# Path to the unified Lua generator script used by all add_lua_* functions.
+# Path to the unified Lua generator script used by all luaz_add_* functions.
 set(LUA_GENERATE_SCRIPT "${CMAKE_CURRENT_LIST_DIR}/scripts/luaz_gen.py"
     CACHE INTERNAL "Path to luaz_gen.py")
 
-# _lua_generate_thread_kconfig(FILE_NAME)
+# _luaz_generate_thread_kconfig(FILE_NAME)
 #
 # Generate a per-thread Kconfig fragment with STACK_SIZE, HEAP_SIZE,
 # and PRIORITY options that default to the global CONFIG_LUA_THREAD_* values.
 #
 # The file is written to ${KCONFIG_BINARY_DIR}/Kconfig.lua_thread.${FILE_NAME}
 # and picked up by osource in Kconfig.luaz.
-function(_lua_generate_thread_kconfig FILE_NAME)
+function(_luaz_generate_thread_kconfig FILE_NAME)
     string(TOUPPER "${FILE_NAME}" FILE_NAME_UPPER)
     set(KCONFIG_FILE "${KCONFIG_BINARY_DIR}/Kconfig.lua_thread.${FILE_NAME}")
 
@@ -72,7 +72,7 @@ config ${FILE_NAME_UPPER}_LUA_THREAD_PRIORITY\n\
 endfunction()
 
 
-# add_lua_file(FILE_NAME_PATH)
+# luaz_add_file(FILE_NAME_PATH)
 #
 # Embed a .lua script as a C const string header.
 #
@@ -85,7 +85,7 @@ endfunction()
 #
 # Arguments:
 #   FILE_NAME_PATH - Path to the .lua file (relative to project source dir).
-function(add_lua_file FILE_NAME_PATH)
+function(luaz_add_file FILE_NAME_PATH)
     cmake_path(GET FILE_NAME_PATH FILENAME FILE_NAME)
     cmake_path(REMOVE_EXTENSION FILE_NAME OUTPUT_VARIABLE FILE_NAME)
 
@@ -113,7 +113,7 @@ function(add_lua_file FILE_NAME_PATH)
 endfunction()
 
 
-# add_lua_thread(FILE_NAME_PATH)
+# luaz_add_thread(FILE_NAME_PATH)
 #
 # Generate a complete Lua thread (Zephyr thread + embedded script).
 #
@@ -128,7 +128,7 @@ endfunction()
 #
 # Arguments:
 #   FILE_NAME_PATH - Path to the .lua file (relative to project source dir).
-function(add_lua_thread FILE_NAME_PATH)
+function(luaz_add_thread FILE_NAME_PATH)
     cmake_path(GET FILE_NAME_PATH FILENAME FILE_NAME)
     cmake_path(REMOVE_EXTENSION FILE_NAME OUTPUT_VARIABLE FILE_NAME)
 
@@ -149,7 +149,7 @@ function(add_lua_thread FILE_NAME_PATH)
         COMMENT "Generating ${FILE_NAME}_lua_thread.c from ${FILE_NAME}.lua"
     )
 
-    _lua_generate_thread_kconfig("${FILE_NAME}")
+    _luaz_generate_thread_kconfig("${FILE_NAME}")
 
     include_directories("${LUA_OUTPUT_DIR}")
 
@@ -157,7 +157,7 @@ function(add_lua_thread FILE_NAME_PATH)
 endfunction()
 
 
-# add_lua_bytecode_file(FILE_NAME_PATH)
+# luaz_add_bytecode_file(FILE_NAME_PATH)
 #
 # Embed a pre-compiled Lua bytecode as a C uint8_t array header.
 #
@@ -171,7 +171,7 @@ endfunction()
 #
 # Arguments:
 #   FILE_NAME_PATH - Path to the .lua file (relative to project source dir).
-function(add_lua_bytecode_file FILE_NAME_PATH)
+function(luaz_add_bytecode_file FILE_NAME_PATH)
     cmake_path(GET FILE_NAME_PATH FILENAME FILE_NAME)
     cmake_path(REMOVE_EXTENSION FILE_NAME OUTPUT_VARIABLE FILE_NAME)
 
@@ -200,7 +200,7 @@ function(add_lua_bytecode_file FILE_NAME_PATH)
 endfunction()
 
 
-# add_lua_bytecode_thread(FILE_NAME_PATH)
+# luaz_add_bytecode_thread(FILE_NAME_PATH)
 #
 # Generate a complete Lua thread loading pre-compiled bytecode.
 #
@@ -217,7 +217,7 @@ endfunction()
 #
 # Arguments:
 #   FILE_NAME_PATH - Path to the .lua file (relative to project source dir).
-function(add_lua_bytecode_thread FILE_NAME_PATH)
+function(luaz_add_bytecode_thread FILE_NAME_PATH)
     cmake_path(GET FILE_NAME_PATH FILENAME FILE_NAME)
     cmake_path(REMOVE_EXTENSION FILE_NAME OUTPUT_VARIABLE FILE_NAME)
 
@@ -239,7 +239,7 @@ function(add_lua_bytecode_thread FILE_NAME_PATH)
         COMMENT "Generating ${FILE_NAME}_lua_bytecode_thread.c from ${FILE_NAME}.lua"
     )
 
-    _lua_generate_thread_kconfig("${FILE_NAME}")
+    _luaz_generate_thread_kconfig("${FILE_NAME}")
 
     include_directories("${LUA_OUTPUT_DIR}")
 
@@ -247,7 +247,7 @@ function(add_lua_bytecode_thread FILE_NAME_PATH)
 endfunction()
 
 
-# add_lua_fs_thread(SCRIPT_FS_PATH)
+# luaz_add_fs_thread(SCRIPT_FS_PATH)
 #
 # Generate a Lua thread that loads its script from the filesystem at runtime.
 #
@@ -260,7 +260,7 @@ endfunction()
 # Arguments:
 #   SCRIPT_FS_PATH - Filesystem path the thread will load at runtime
 #                    (e.g. "/lfs/hello_fs.lua" or just "hello_fs.lua").
-function(add_lua_fs_thread SCRIPT_FS_PATH)
+function(luaz_add_fs_thread SCRIPT_FS_PATH)
     # Derive a C-safe identifier from the path
     string(REGEX REPLACE "[^a-zA-Z0-9_]" "_" FILE_NAME "${SCRIPT_FS_PATH}")
     string(REGEX REPLACE "^_+" "" FILE_NAME "${FILE_NAME}")
@@ -268,7 +268,7 @@ function(add_lua_fs_thread SCRIPT_FS_PATH)
     set(LUA_FS_PATH "${SCRIPT_FS_PATH}")
     string(TOUPPER "${FILE_NAME}" FILE_NAME_UPPER)
 
-    _lua_generate_thread_kconfig("${FILE_NAME}")
+    _luaz_generate_thread_kconfig("${FILE_NAME}")
 
     configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/templates/lua_fs_thread.c.in"
     "${CMAKE_CURRENT_BINARY_DIR}/lua/${FILE_NAME}_lua_fs_thread.c")
@@ -281,34 +281,34 @@ function(add_lua_fs_thread SCRIPT_FS_PATH)
 endfunction()
 
 
-# add_lua_fs_file(SOURCE_PATH [FS_NAME])
+# luaz_add_fs_file(SOURCE_PATH [FS_NAME])
 #
 # Register a Lua source file for embedding and later writing to the FS.
 #
-# Embeds the file as a C string header (via add_lua_file) so that the
+# Embeds the file as a C string header (via luaz_add_file) so that the
 # application can write it to the filesystem at boot using lua_fs_write_file().
 #
 # Arguments:
 #   SOURCE_PATH - Path to the .lua file (relative to project source dir).
 #   FS_NAME     - Optional: basename on the filesystem (defaults to source basename).
-function(add_lua_fs_file SOURCE_PATH)
-    add_lua_file("${SOURCE_PATH}")
+function(luaz_add_fs_file SOURCE_PATH)
+    luaz_add_file("${SOURCE_PATH}")
 endfunction()
 
 
-# lua_generate_threads()
+# luaz_generate_threads()
 #
-# Generate Lua threads from the LUA_SOURCE_THREADS, LUA_BYTECODE_THREADS,
-# and LUA_FS_THREADS list variables. Each entry is processed by the
-# corresponding add_lua_*_thread() function.
-function(lua_generate_threads)
-    foreach(_path ${LUA_SOURCE_THREADS})
-        add_lua_thread("${_path}")
+# Generate Lua threads from the LUAZ_SOURCE_THREADS, LUAZ_BYTECODE_THREADS,
+# and LUAZ_FS_THREADS list variables. Each entry is processed by the
+# corresponding luaz_add_*_thread() function.
+function(luaz_generate_threads)
+    foreach(_path ${LUAZ_SOURCE_THREADS})
+        luaz_add_thread("${_path}")
     endforeach()
-    foreach(_path ${LUA_BYTECODE_THREADS})
-        add_lua_bytecode_thread("${_path}")
+    foreach(_path ${LUAZ_BYTECODE_THREADS})
+        luaz_add_bytecode_thread("${_path}")
     endforeach()
-    foreach(_path ${LUA_FS_THREADS})
-        add_lua_fs_thread("${_path}")
+    foreach(_path ${LUAZ_FS_THREADS})
+        luaz_add_fs_thread("${_path}")
     endforeach()
 endfunction()

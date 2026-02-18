@@ -4,8 +4,8 @@ cmake_minimum_required(VERSION 3.20.0)
 
 set(ZEPHYR_EXTRA_MODULES "${CMAKE_CURRENT_SOURCE_DIR}/../../")
 
-include(${ZEPHYR_EXTRA_MODULES}/lua_kconfig.cmake)
-lua_add_bytecode_thread(src/producer.lua)
+include(${ZEPHYR_EXTRA_MODULES}/luaz.cmake)
+luaz_add_bytecode_thread(src/producer.lua)
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(producer_consumer)
@@ -20,7 +20,7 @@ zephyr_nanopb_sources(app proto/channels.proto)
 
 include_directories(include/)
 
-lua_generate_threads()
+luaz_generate_threads()
 
 file(GLOB_RECURSE SRC ${CMAKE_SOURCE_DIR} "src/*.c")
 
