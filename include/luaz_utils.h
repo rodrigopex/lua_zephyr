@@ -80,9 +80,10 @@ void *lua_zephyr_allocator(void *ud, void *ptr, size_t osize, size_t nsize);
 int luaopen_zephyr(lua_State *L);
 
 /**
- * @brief Load base + package libs and preload zephyr and standard Lua libs.
+ * @brief Register minimal require() and preload zephyr + standard Lua libs.
  *
  * Call once after lua_newstate() to make require() available.
+ * Uses a lightweight preload-only require() instead of luaopen_package().
  *
  * @param L  Lua state.
  */
