@@ -53,5 +53,5 @@ if(CONFIG_LUA)
         "${SRC_DIR}/luaz_fs_shell.c")
 
     # Add the helper functions to be used inside the user CMakeLists.txt.
-    include("${LUA_DIR}/lua.cmake")
+    include("${LUA_DIR}/luaz.cmake")
 endif()
