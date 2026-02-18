@@ -79,8 +79,9 @@ endmacro()
 # and generates the per-thread Kconfig fragment.
 macro(luaz_define_fs_thread _path)
     list(APPEND LUAZ_FS_THREADS "${_path}")
-    string(REGEX REPLACE "[^a-zA-Z0-9_]" "_" _lua_fname "${_path}")
-    string(REGEX REPLACE "^_+" "" _lua_fname "${_lua_fname}")
+    set(_lua_thread_path "${_path}")
+    cmake_path(GET _lua_thread_path FILENAME _lua_fname)
+    cmake_path(REMOVE_EXTENSION _lua_fname OUTPUT_VARIABLE _lua_fname)
     _luaz_write_thread_kconfig("${_lua_fname}")
 endmacro()
 
@@ -310,9 +311,9 @@ endfunction()
 #   SCRIPT_FS_PATH - Filesystem path the thread will load at runtime
 #                    (e.g. "/lfs/hello_fs.lua" or just "hello_fs.lua").
 function(luaz_add_fs_thread SCRIPT_FS_PATH)
-    # Derive a C-safe identifier from the path
-    string(REGEX REPLACE "[^a-zA-Z0-9_]" "_" FILE_NAME "${SCRIPT_FS_PATH}")
-    string(REGEX REPLACE "^_+" "" FILE_NAME "${FILE_NAME}")
+    # Extract filename and strip extension, consistent with source/bytecode threads
+    cmake_path(GET SCRIPT_FS_PATH FILENAME FILE_NAME)
+    cmake_path(REMOVE_EXTENSION FILE_NAME OUTPUT_VARIABLE FILE_NAME)
 
     set(LUA_FS_PATH "${SCRIPT_FS_PATH}")
     string(TOUPPER "${FILE_NAME}" FILE_NAME_UPPER)
