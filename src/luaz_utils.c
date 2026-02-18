@@ -54,6 +54,42 @@ void *lua_zephyr_allocator(void *ud, void *ptr, size_t osize, size_t nsize)
 	return res;
 }
 
+/** @brief Print thread memory usage report (heap and stack) as a table. */
+void luaz_print_mem_usage(struct sys_heap *hp, size_t heap_size)
+{
+	ARG_UNUSED(hp);
+	ARG_UNUSED(heap_size);
+
+	printk("-- Lua thread memory report:\n");
+	printk("        %6s  %8s  %8s  %5s\n", "size", "max used", "unused", "usage");
+
+#ifdef CONFIG_SYS_HEAP_RUNTIME_STATS
+	{
+		struct sys_memory_stats stats;
+
+		sys_heap_runtime_stats_get(hp, &stats);
+		printk("heap:  %6zu  %8zu  %8zu  %4u%%\n", heap_size, stats.max_allocated_bytes,
+		       stats.free_bytes,
+		       (unsigned int)(stats.max_allocated_bytes * 100U / heap_size));
+	}
+#endif
+
+#if defined(CONFIG_INIT_STACKS) && defined(CONFIG_THREAD_STACK_INFO)
+	{
+		size_t unused;
+		const struct k_thread *t = k_current_get();
+
+		if (k_thread_stack_space_get(t, &unused) == 0) {
+			size_t size = t->stack_info.size;
+			size_t used = size - unused;
+
+			printk("stack: %6zu  %8zu  %8zu  %4u%%\n", size, used, unused,
+			       (unsigned int)(used * 100U / size));
+		}
+	}
+#endif
+}
+
 /** @brief Lua binding for k_msleep. Expects one integer argument (ms). */
 static int k_msleep_wrapper(lua_State *L)
 {
@@ -151,7 +187,7 @@ static const luaL_Reg zephyr_wrappers[] = {
 	{"log_wrn", log_wrn_wrapper},
 	{"log_dbg", log_dbg_wrapper},
 	{"log_err", log_err_wrapper},
-	{NULL, NULL} // Sentinel value to mark the end of the array
+	{NULL, NULL} /* Sentinel value to mark the end of the array */
 };
 
 /** @brief Open the `zephyr` Lua library. Registers kernel wrappers and nests zbus/fs. */

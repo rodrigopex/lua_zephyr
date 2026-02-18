@@ -34,6 +34,8 @@ tests:
         - "--> Lua received ack 9"
         - "\\s*10 - Accelerometer data x=\\d\\d,y=\\d\\d,z=\\d\\d"
         - "--> Lua received ack 10"
+        - "heap:\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\d+%"
+        - "stack:\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\d+%"
     tags: lua_zephyr
     integration_platforms:
       - qemu_x86

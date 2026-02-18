@@ -58,6 +58,17 @@
 /* clang-format on */
 
 /**
+ * @brief Print thread memory usage report (heap and stack) as a table.
+ *
+ * Conditionally prints heap stats (CONFIG_SYS_HEAP_RUNTIME_STATS)
+ * and stack stats (CONFIG_INIT_STACKS + CONFIG_THREAD_STACK_INFO).
+ *
+ * @param hp         Pointer to the sys_heap to query.
+ * @param heap_size  Total heap size in bytes.
+ */
+void luaz_print_mem_usage(struct sys_heap *hp, size_t heap_size);
+
+/**
  * @brief Custom Lua allocator backed by a Zephyr sys_heap.
  *
  * Conforms to the lua_Alloc signature.  Passed as the allocator function

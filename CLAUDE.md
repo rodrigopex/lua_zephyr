@@ -47,7 +47,7 @@ clang-format -i <file>   # Uses .clang-format (Zephyr-aligned LLVM, 8-space inde
 
 - **Lua 5.5.0 core** — Git submodule (`lua/`) from `github.com/lua/lua` at tag `v5.5.0`
 - **Zephyr integration** (`src/`):
-  - `luaz_utils.c` — Custom `sys_heap` allocator, `luaz_openlibs()`, minimal `require()`, kernel API bindings (`zephyr.msleep`, `zephyr.printk`, `zephyr.log_*`)
+  - `luaz_utils.c` — Custom `sys_heap` allocator, `luaz_openlibs()`, minimal `require()`, `luaz_print_mem_usage()`, kernel API bindings (`zephyr.msleep`, `zephyr.printk`, `zephyr.log_*`)
   - `luaz_zbus.c` — zbus channel/observer Lua bindings (pub, read, wait_msg)
   - `luaz_msg_descr.c` — Descriptor-based Lua↔C struct conversion (helper library)
   - `luaz_repl.c` — Interactive Lua shell (enabled via `CONFIG_LUA_REPL`)
@@ -86,6 +86,7 @@ Each generated thread gets:
 - Custom Lua allocator backed by the thread's heap
 - `luaz_openlibs(L)` called automatically — registers `require()` and preloads all enabled libraries
 - A weak setup hook (`<script>_lua_setup`) for registering zbus channels/observers
+- `luaz_print_mem_usage()` called after script exits — prints heap and stack usage table (requires `CONFIG_SYS_HEAP_RUNTIME_STATS` for heap, `CONFIG_INIT_STACKS` + `CONFIG_THREAD_STACK_INFO` for stack)
 
 **Variants:**
 
