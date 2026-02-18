@@ -1,7 +1,7 @@
-# luaz.cmake — Pre-Zephyr Lua thread declaration and Kconfig generation.
+# luaz.cmake — Pre-Zephyr Lua thread definition and Kconfig generation.
 #
-# Include this file BEFORE find_package(Zephyr) and use the luaz_add_*_thread()
-# functions to declare Lua threads. Each call appends to the corresponding list
+# Include this file BEFORE find_package(Zephyr) and use the luaz_define_*_thread()
+# functions to define Lua threads. Each call appends to the corresponding list
 # variable and generates a per-thread Kconfig fragment with STACK_SIZE,
 # HEAP_SIZE, and PRIORITY options that default to the global values.
 #
@@ -10,8 +10,8 @@
 #
 # Example:
 #   include(${ZEPHYR_EXTRA_MODULES}/luaz.cmake)
-#   luaz_add_bytecode_thread(src/producer.lua)
-#   luaz_add_bytecode_thread(src/consumer.lua)
+#   luaz_define_bytecode_thread(src/producer.lua)
+#   luaz_define_bytecode_thread(src/consumer.lua)
 #   find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 #   project(my_app)
 #   luaz_generate_threads()
@@ -44,11 +44,11 @@ config ${_name_upper}_LUA_THREAD_PRIORITY\n\
     )
 endmacro()
 
-# luaz_add_source_thread(FILE_NAME_PATH)
+# luaz_define_source_thread(FILE_NAME_PATH)
 #
-# Declare a source-embedded Lua thread. Appends to LUAZ_SOURCE_THREADS
+# Define a source-embedded Lua thread. Appends to LUAZ_SOURCE_THREADS
 # and generates the per-thread Kconfig fragment.
-macro(luaz_add_source_thread _path)
+macro(luaz_define_source_thread _path)
     list(APPEND LUAZ_SOURCE_THREADS "${_path}")
     set(_lua_thread_path "${_path}")
     cmake_path(GET _lua_thread_path FILENAME _lua_fname)
@@ -56,11 +56,11 @@ macro(luaz_add_source_thread _path)
     _luaz_write_thread_kconfig("${_lua_fname}")
 endmacro()
 
-# luaz_add_bytecode_thread(FILE_NAME_PATH)
+# luaz_define_bytecode_thread(FILE_NAME_PATH)
 #
-# Declare a bytecode Lua thread. Appends to LUAZ_BYTECODE_THREADS
+# Define a bytecode Lua thread. Appends to LUAZ_BYTECODE_THREADS
 # and generates the per-thread Kconfig fragment.
-macro(luaz_add_bytecode_thread _path)
+macro(luaz_define_bytecode_thread _path)
     list(APPEND LUAZ_BYTECODE_THREADS "${_path}")
     set(_lua_thread_path "${_path}")
     cmake_path(GET _lua_thread_path FILENAME _lua_fname)
@@ -68,11 +68,11 @@ macro(luaz_add_bytecode_thread _path)
     _luaz_write_thread_kconfig("${_lua_fname}")
 endmacro()
 
-# luaz_add_fs_thread(SCRIPT_FS_PATH)
+# luaz_define_fs_thread(SCRIPT_FS_PATH)
 #
-# Declare an FS-backed Lua thread. Appends to LUAZ_FS_THREADS
+# Define an FS-backed Lua thread. Appends to LUAZ_FS_THREADS
 # and generates the per-thread Kconfig fragment.
-macro(luaz_add_fs_thread _path)
+macro(luaz_define_fs_thread _path)
     list(APPEND LUAZ_FS_THREADS "${_path}")
     string(REGEX REPLACE "[^a-zA-Z0-9_]" "_" _lua_fname "${_path}")
     string(REGEX REPLACE "^_+" "" _lua_fname "${_lua_fname}")

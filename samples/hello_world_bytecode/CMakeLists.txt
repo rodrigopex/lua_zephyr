@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.20.0)
 set(ZEPHYR_EXTRA_MODULES "${CMAKE_CURRENT_SOURCE_DIR}/../../")
 
 include(${ZEPHYR_EXTRA_MODULES}/luaz.cmake)
-luaz_add_bytecode_thread(src/hello_world.lua)
+luaz_define_bytecode_thread(src/hello_world.lua)
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(hello_world_bytecode)
