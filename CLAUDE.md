@@ -47,36 +47,61 @@ clang-format -i <file>   # Uses .clang-format (Zephyr-aligned LLVM, 8-space inde
 
 - **Lua 5.5.0 core** — Git submodule (`lua/`) from `github.com/lua/lua` at tag `v5.5.0`
 - **Zephyr integration** (`src/`):
-  - `luaz_utils.c` — Custom `sys_heap` allocator, kernel API bindings (`zephyr.msleep`, `zephyr.printk`, `zephyr.log_*`)
+  - `luaz_utils.c` — Custom `sys_heap` allocator, `luaz_openlibs()`, minimal `require()`, kernel API bindings (`zephyr.msleep`, `zephyr.printk`, `zephyr.log_*`)
   - `luaz_zbus.c` — zbus channel/observer Lua bindings (pub, read, wait_msg)
   - `luaz_msg_descr.c` — Descriptor-based Lua↔C struct conversion (helper library)
   - `luaz_repl.c` — Interactive Lua shell (enabled via `CONFIG_LUA_REPL`)
   - `luaz_fs.c` — Filesystem support: `dofile`, `loadfile`, `list`, `write_file` (enabled via `CONFIG_LUA_FS`)
   - `luaz_fs_shell.c` — Shell commands for managing Lua scripts on FS: list, cat, write, delete, run, stat (enabled via `CONFIG_LUA_FS_SHELL`)
+  - `luaz_parser_stubs.c` — Parser stubs for bytecode-only builds (enabled via `CONFIG_LUA_PRECOMPILE_ONLY`)
 
-### CMake Functions (`lua.cmake`)
+### CMake API (`luaz.cmake`)
 
-- `luaz_add_file(path)` — Embed a `.lua` file as a C string header (via `lua_cat.py`)
-- `luaz_add_thread(path)` — Generate a Lua thread with heap, state, and embedded source script (via `lua_thread.c.in`)
+Single file included **twice** during a build:
+
+1. **Pre-Zephyr** (by user CMakeLists.txt) — thread definitions + Kconfig generation
+2. **Post-Zephyr** (by module CMakeLists.txt) — code generation + host luac build
+
+**Pre-Zephyr macros** (call before `find_package(Zephyr)`):
+
+- `luaz_define_source_thread(path)` — Define a source-embedded thread
+- `luaz_define_bytecode_thread(path)` — Define a bytecode thread
+- `luaz_define_fs_thread(fs_path)` — Define a filesystem-backed thread
+
+Each generates a per-thread Kconfig fragment with `<NAME>_LUA_THREAD_STACK_SIZE`, `_HEAP_SIZE`, `_PRIORITY`.
+
+**Post-Zephyr functions** (call after `find_package(Zephyr)`):
+
+- `luaz_generate_threads()` — Generate all defined threads (processes `LUAZ_SOURCE_THREADS`, `LUAZ_BYTECODE_THREADS`, `LUAZ_FS_THREADS` lists)
+- `luaz_add_file(path)` — Embed a `.lua` file as a C string header (via `luaz_gen.py`)
 - `luaz_add_bytecode_file(path)` — Embed precompiled bytecode as a C `uint8_t[]` header (requires `CONFIG_LUA_PRECOMPILE`)
-- `luaz_add_bytecode_thread(path)` — Generate a Lua thread that loads precompiled bytecode (requires `CONFIG_LUA_PRECOMPILE`)
-- `luaz_add_fs_file(src [name])` — Register a Lua file for embedding and writing to the filesystem at boot (requires `CONFIG_LUA_FS`)
-- `luaz_add_fs_thread(fs_path)` — Generate a Lua thread that loads its script from the filesystem at runtime (requires `CONFIG_LUA_FS`)
+- `luaz_add_fs_file(src [name])` — Register a Lua file for embedding and writing to the FS at boot (requires `CONFIG_LUA_FS`)
 
 ### Thread Model
 
-Each `luaz_add_thread()` call (and its bytecode/fs variants) generates a Zephyr thread with:
+Each generated thread gets:
 
-- Dedicated `sys_heap` (`CONFIG_LUA_THREAD_HEAP_SIZE`, default 32KB)
-- Dedicated stack (`CONFIG_LUA_THREAD_STACK_SIZE`, default 2KB)
+- Dedicated `sys_heap` (per-thread `CONFIG_<NAME>_LUA_THREAD_HEAP_SIZE`, defaults to `CONFIG_LUA_THREAD_HEAP_SIZE` = 32KB)
+- Dedicated stack (per-thread `CONFIG_<NAME>_LUA_THREAD_STACK_SIZE`, defaults to `CONFIG_LUA_THREAD_STACK_SIZE` = 2KB)
 - Custom Lua allocator backed by the thread's heap
-- A setup hook (`<script>_lua_setup`) for registering libraries
+- `luaz_openlibs(L)` called automatically — registers `require()` and preloads all enabled libraries
+- A weak setup hook (`<script>_lua_setup`) for registering zbus channels/observers
 
 **Variants:**
 
-- **Source thread** (`luaz_add_thread`) — script embedded as C string, parsed at startup
-- **Bytecode thread** (`luaz_add_bytecode_thread`) — script precompiled, parser can be stripped
-- **Filesystem thread** (`luaz_add_fs_thread`) — script loaded from FS path at runtime
+- **Source thread** (`luaz_define_source_thread`) — script embedded as C string, parsed at startup
+- **Bytecode thread** (`luaz_define_bytecode_thread`) — script precompiled, parser can be stripped
+- **Filesystem thread** (`luaz_define_fs_thread`) — script loaded from FS path at runtime
+
+### Lua API
+
+Scripts use `require("zephyr")` to access kernel bindings. zbus and fs are nested subtables:
+
+- `zephyr.msleep`, `zephyr.printk`, `zephyr.log_inf`, `zephyr.log_wrn`, `zephyr.log_dbg`, `zephyr.log_err`
+- `zephyr.zbus` — zbus bindings (when `CONFIG_LUA_LIB_ZBUS=y`): `chan:pub`, `chan:read`, `obs:wait_msg`
+- `zephyr.fs` — filesystem bindings (when `CONFIG_LUA_FS=y`): `fs.dofile`, `fs.loadfile`, `fs.list`
+
+Channels/observers are registered in the setup hook via `LUA_REQUIRE_ZBUS_CHAN(chan)` / `LUA_REQUIRE_ZBUS_OBS(obs)`.
 
 ### zbus Integration
 
@@ -104,20 +129,31 @@ Deeper nesting (3+ levels) works the same way — always define leaf types first
 
 ### Kconfig Options
 
-| Option                         | Default  | Description                                  |
-| ------------------------------ | -------- | -------------------------------------------- |
-| `CONFIG_LUA`                   | —        | Enable Lua support (selects zbus)            |
-| `CONFIG_LUA_REPL`              | `n`      | Enable interactive Lua shell                 |
-| `CONFIG_LUA_REPL_LINE_SIZE`    | `256`    | Maximum REPL input line length               |
-| `CONFIG_LUA_THREAD_STACK_SIZE` | `2048`   | Stack size for generated Lua threads         |
-| `CONFIG_LUA_THREAD_HEAP_SIZE`  | `32768`  | Heap size for generated Lua threads          |
-| `CONFIG_LUA_THREAD_PRIORITY`   | `7`      | Priority of generated Lua threads            |
-| `CONFIG_LUA_PRECOMPILE`        | `n`      | Precompile scripts to bytecode at build time |
-| `CONFIG_LUA_PRECOMPILE_ONLY`   | `n`      | Exclude Lua parser (~15-20 KB savings)       |
-| `CONFIG_LUA_FS`                | `n`      | Enable filesystem support                    |
-| `CONFIG_LUA_FS_MOUNT_POINT`    | `"/lfs"` | Filesystem mount point prefix                |
-| `CONFIG_LUA_FS_MAX_FILE_SIZE`  | `4096`   | Maximum script file size (bytes)             |
-| `CONFIG_LUA_FS_SHELL`          | `n`      | Enable `lua_fs` shell commands               |
+| Option                           | Default  | Description                                                        |
+| -------------------------------- | -------- | ------------------------------------------------------------------ |
+| `CONFIG_LUA`                     | —        | Enable Lua support (selects zbus)                                  |
+| `CONFIG_LUA_REPL`                | `n`      | Enable interactive Lua shell                                       |
+| `CONFIG_LUA_REPL_LINE_SIZE`      | `256`    | Maximum REPL input line length                                     |
+| `CONFIG_LUA_THREAD_STACK_SIZE`   | `2048`   | Default stack size for generated Lua threads                       |
+| `CONFIG_LUA_THREAD_HEAP_SIZE`    | `32768`  | Default heap size for generated Lua threads                        |
+| `CONFIG_LUA_THREAD_PRIORITY`     | `7`      | Default priority of generated Lua threads                          |
+| `CONFIG_LUA_LIBS_ALL`            | `n`      | Preload all standard Lua libraries + zbus                          |
+| `CONFIG_LUA_LIB_STRING`          | if ALL   | Lua string library                                                 |
+| `CONFIG_LUA_LIB_TABLE`           | if ALL   | Lua table library                                                  |
+| `CONFIG_LUA_LIB_MATH`            | if ALL   | Lua math library                                                   |
+| `CONFIG_LUA_LIB_COROUTINE`       | if ALL   | Lua coroutine library                                              |
+| `CONFIG_LUA_LIB_UTF8`            | if ALL   | Lua utf8 library                                                   |
+| `CONFIG_LUA_LIB_DEBUG`           | if ALL   | Lua debug library                                                  |
+| `CONFIG_LUA_LIB_ZBUS`            | if ALL   | Include zbus bindings as `zephyr.zbus` subtable                    |
+| `CONFIG_LUA_PRECOMPILE`          | `n`      | Precompile scripts to bytecode at build time                       |
+| `CONFIG_LUA_PRECOMPILE_ONLY`     | `n`      | Exclude Lua parser (~15-20 KB savings)                             |
+| `CONFIG_LUA_EXTRA_OPTIMIZATIONS` | `n`      | Reduce internal data structure sizes (experimental, bytecode-only) |
+| `CONFIG_LUA_FS`                  | `n`      | Enable filesystem support                                          |
+| `CONFIG_LUA_FS_MOUNT_POINT`      | `"/lfs"` | Filesystem mount point prefix                                      |
+| `CONFIG_LUA_FS_MAX_FILE_SIZE`    | `4096`   | Maximum script file size (bytes)                                   |
+| `CONFIG_LUA_FS_SHELL`            | `n`      | Enable `lua_fs` shell commands                                     |
+
+Per-thread overrides: each `luaz_define_*_thread()` generates `CONFIG_<SCRIPT>_LUA_THREAD_STACK_SIZE`, `_HEAP_SIZE`, `_PRIORITY` options that default to the global values above.
 
 ## Code Style
 
