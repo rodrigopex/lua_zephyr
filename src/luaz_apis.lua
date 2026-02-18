@@ -1,6 +1,6 @@
 ---@meta
 
---- zbus channel userdata (registered via LUA_REQUIRE_ZBUS_CHAN).
+--- zbus channel userdata (returned by zbus.channel_declare).
 ---@class zbus_channel
 local zbus_channel = {}
 
@@ -16,7 +16,7 @@ function zbus_channel:pub(data, timeout_ms) end
 ---@return table|nil data # Message table, or nil on error.
 function zbus_channel:read(timeout_ms) end
 
---- zbus observer userdata (registered via LUA_REQUIRE_ZBUS_OBS).
+--- zbus observer userdata (returned by zbus.observer_declare).
 ---@class zbus_observer
 local zbus_observer = {}
 
