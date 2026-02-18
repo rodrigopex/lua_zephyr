@@ -1,4 +1,4 @@
 name: lua
 build:
   cmake: .
-  kconfig: Kconfig.lua_module
+  kconfig: Kconfig.luaz

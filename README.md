@@ -297,7 +297,7 @@ sample for a complete example.
 
 ## Configuration
 
-All options live under `Kconfig.lua_module`.
+All options live under `Kconfig.luaz`.
 
 | Option                         | Default  | Description                                                          |
 | ------------------------------ | -------- | -------------------------------------------------------------------- |
